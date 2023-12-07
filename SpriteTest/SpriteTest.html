@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="no" style="display: table; margin: auto">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sprite Test</title>
+    <script src="../lib/lib2D.js"></script>
+    <script src="../lib/libSprite.js"></script>
+    <script src="./Sonic.js"></script>
+  </head>
+  <body style="display: table-cell; vertical-align: middle">
+    <label for="txtOut">Sprite Test</label>
+    <div style="padding: 10px; margin: 10px; min-width: 500px; border: darkblue thin solid; background-color: antiquewhite">
+      <canvas id="cvs" width="500" style="background-color: antiquewhite"></canvas>
+    </div>
+    <div style="padding: 10px; margin: 10px; min-width: 500px; border: darkblue thin solid; background-color: whitesmoke">
+      <div id="logOutput"></div>
+    </div>
+    <script>
+      "use strict";
+
+      const originalConsoleLog = console.log;
+      let imgSheet = null;
+      let cvs = null;
+      let ctx = null;
+      let sonic = null;
+
+      // Override console.log with a custom function
+      console.log = function (message) {
+        // Append the log message to the "logOutput" div
+        const logOutputDiv = document.getElementById("logOutput");
+        logOutputDiv.innerHTML += `<p>${message}</p>`;
+
+        // Call the original console.log function
+        originalConsoleLog.apply(console, arguments);
+      };
+
+      function runGame() {
+        console.log("Game is Running");
+        cvs = document.getElementById("cvs");
+        ctx = cvs.getContext("2d");
+        loadSpriteImage();
+      }
+
+      function loadSpriteImage() {
+        imgSheet = new Image();
+        imgSheet.addEventListener("load", gameReady, false);
+        imgSheet.src = "./sonic_sprite_sheet.png";
+      }
+
+
+      function draw(){
+        ctx.clearRect(0, 0, cvs.width, cvs.height);
+        sonic.draw();
+        requestAnimationFrame(draw);
+      }
+
+      function animate(){
+        sonic.animate();
+      }
+      
+      function gameReady(){
+        sonic = new TSonic(cvs, imgSheet);
+        draw();
+        setInterval(animate, 90);
+      }
+
+      document.addEventListener("DOMContentLoaded", runGame);
+    </script>
+  </body>
+</html>
