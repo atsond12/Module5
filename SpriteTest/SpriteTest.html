@@ -12,28 +12,16 @@
     <div style="padding: 10px; margin: 10px; min-width: 500px; border: darkblue thin solid; background-color: antiquewhite">
       <canvas id="cvs" width="500" style="background-color: antiquewhite"></canvas>
     </div>
-    <div style="padding: 10px; margin: 10px; min-width: 500px; border: darkblue thin solid; background-color: whitesmoke">
-      <div id="logOutput"></div>
-    </div>
     <script>
       "use strict";
 
-      const originalConsoleLog = console.log;
       let imgSheet = null;
       let cvs = null;
       let ctx = null;
-      let sonic = null;
+      let sonic1 = null;
+      let sonic2 = null;
 
       // Override console.log with a custom function
-      console.log = function (message) {
-        // Append the log message to the "logOutput" div
-        const logOutputDiv = document.getElementById("logOutput");
-        logOutputDiv.innerHTML += `<p>${message}</p>`;
-
-        // Call the original console.log function
-        originalConsoleLog.apply(console, arguments);
-      };
-
       function runGame() {
         console.log("Game is Running");
         cvs = document.getElementById("cvs");
@@ -50,18 +38,24 @@
 
       function draw(){
         ctx.clearRect(0, 0, cvs.width, cvs.height);
-        sonic.draw();
+        sonic1.draw();
+        sonic2.draw();
         requestAnimationFrame(draw);
       }
 
       function animate(){
-        sonic.animate();
+        sonic1.animate();
+        sonic2.animate();
+        if(sonic1.collide(sonic2)){
+          console.log("collision!!!");
+        }
       }
       
       function gameReady(){
-        sonic = new TSonic(cvs, imgSheet);
+        sonic1 = new TSonic1(cvs, imgSheet);
+        sonic2 = new TSonic2(cvs, imgSheet);
         draw();
-        setInterval(animate, 90);
+        setInterval(animate, 10);
       }
 
       document.addEventListener("DOMContentLoaded", runGame);
