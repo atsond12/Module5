@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="no" style="display: table; margin: auto">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sprite Test</title>
+  </head>
+  <body style="display: table-cell; vertical-align: middle">
+    <label for="txtOut">Sprite Test</label>
+    <div style="padding: 10px; margin: 10px; min-width: 500px; border: darkblue thin solid; background-color: antiquewhite">
+      <canvas id="cvs" width="500" style="background-color: antiquewhite"></canvas>
+    </div>
+    <script type="module">
+      "use strict";
+      import { TSonic1, TSonic2 } from "./Sonic.js";
+
+      let imgSheet = null;
+      let cvs = null;
+      let ctx = null;
+      let sonic1 = null;
+      let sonic2 = null;
+
+      // Override console.log with a custom function
+      function runGame() {
+        console.log("Game is Running");
+        cvs = document.getElementById("cvs");
+        ctx = cvs.getContext("2d");
+        loadSpriteImage();
+      }
+
+      function loadSpriteImage() {
+        imgSheet = new Image();
+        imgSheet.addEventListener("load", gameReady, false);
+        imgSheet.src = "./sonic_sprite_sheet.png";
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, cvs.width, cvs.height);
+        sonic1.draw();
+        sonic2.draw();
+        requestAnimationFrame(draw);
+      }
+
+      function animate() {
+        sonic1.animate();
+        sonic2.animate();
+        if (sonic1.collide(sonic2)) {
+          console.log("collision!!!");
+        }
+      }
+
+      function gameReady() {
+        sonic1 = new TSonic1(cvs, imgSheet);
+        sonic2 = new TSonic2(cvs, imgSheet);
+        draw();
+        setInterval(animate, 10);
+      }
+
+      document.addEventListener("DOMContentLoaded", runGame);
+    </script>
+  </body>
+</html>
