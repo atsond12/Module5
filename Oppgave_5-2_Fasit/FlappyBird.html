@@ -20,9 +20,9 @@
       <legend>Game Settings</legend>
       <fieldset style="margin-top: 5px">
         <legend>Day or Night</legend>
-        <span><input type="radio" name="rbDayNight" checked="checked" style="margin-right: 10px" />Day</span>
+        <span><input type="radio" name="rbDayNight" checked="checked" value="1" style="margin-right: 10px" />Day</span>
         <br />
-        <span><input type="radio" name="rbDayNight" style="margin-right: 10px" />Night</span>
+        <span><input type="radio" name="rbDayNight" value="0" style="margin-right: 10px" />Night</span>
       </fieldset>
       <p>
         <input id="chkMuteSound" type="checkbox" />
@@ -35,6 +35,9 @@
       document.addEventListener("DOMContentLoaded", FlappyBird.initGame);
       const chkMuteSound = document.getElementById("chkMuteSound");
       chkMuteSound.addEventListener("change", FlappyBird.muteSound);
+      const rbDayNight = document.getElementsByName("rbDayNight");
+      rbDayNight[0].addEventListener("change", FlappyBird.setDayNight);
+      rbDayNight[1].addEventListener("change", FlappyBird.setDayNight);
 
     </script>
   </body>

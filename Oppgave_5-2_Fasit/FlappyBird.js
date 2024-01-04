@@ -8,7 +8,9 @@ import { TSound } from "../lib/libSound.js";
 //-----------------------------------------------------------------------------------------
 
 const SheetData = {
-  hero: { x: 0, y: 545, width: 34, height: 24, count: 4 },
+  hero1: { x: 0, y: 545, width: 34, height: 24, count: 4 },
+  hero2: { x: 0, y: 569, width: 34, height: 24, count: 4 },
+  hero3: { x: 0, y: 593, width: 34, height: 24, count: 4 },
   obstacle: { x: 0, y: 0, width: 52, height: 320, count: 4 },
   background: { x: 246, y: 0, width: 576, height: 512, count: 2 },
   flappyBird: { x: 0, y: 330, width: 178, height: 50, count: 1 },
@@ -33,6 +35,7 @@ let imgSheet = null;
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
 let soundMuted = false;
+let isDayMode = true;
 
 const gameProps = {
   background: null,
@@ -85,6 +88,14 @@ function TBackground() {
     }
     ground.updateDestination(groundPos.x, groundPos.y);
   };
+
+  this.setDay = function(aDayMode){
+    if(aDayMode){
+      spBackground.setIndex(0);
+    }else{
+      spBackground.setIndex(1);
+    }
+  }
 } // End of class TBackground
 
 //---------------------------------------------------------------
@@ -92,7 +103,11 @@ function TBackground() {
 //---------------------------------------------------------------
 function THero() {
   const heroPos = new TPoint(70, 170);
-  const sprite = new TSprite(cvs, imgSheet, SheetData.hero, heroPos);
+  let spa = SheetData.hero1;
+  if(!isDayMode){
+    spa = SheetData.hero3;
+  }
+  const sprite = new TSprite(cvs, imgSheet, spa, heroPos);
   sprite.setSpeed(100);
   const sinWave = new TSinesWave(heroPos.y, 0.1, 25);
   const gravity = 9.81 / gameSpeed / 1000;
@@ -109,7 +124,7 @@ function THero() {
   this.update = function () {
     speed += gravity;
     heroPos.y += speed;
-    const height = groundLevel - (heroPos.y + SheetData.hero.height);
+    const height = groundLevel - (heroPos.y + spa.height);
     if (height > 0) {
       sprite.animate();
       let rotAngle = speed * 20;
@@ -118,7 +133,7 @@ function THero() {
       }
       sprite.setRotation(rotAngle);
     } else {
-      heroPos.y = groundLevel - SheetData.hero.height;
+      heroPos.y = groundLevel - spa.height;
       gameStatus = EGameStatus.GameOver;
       playSound(soundGameOver);
       gameProps.music.stop();
@@ -155,6 +170,15 @@ function THero() {
     }
     return hit;
   };
+
+  this.setDay = function(aDayMode){
+    if(aDayMode){
+      spa = SheetData.hero1;
+    }else{
+      spa = SheetData.hero3;
+    }
+    sprite.setIndex(0,spa);
+  }
 } // End of THero
 
 //---------------------------------------------------------------
@@ -209,9 +233,6 @@ export function TObstacle() {
   this.isOutOfBounds = false;
   this.heroHasPassed = false;
 
-  spriteDown.setIndex(2);
-  spriteUp.setIndex(3);
-
   function setGap() {
     const gap = Math.ceil(Math.random() * 170) + 70;
     const maxDown = 398 - 25;
@@ -228,6 +249,14 @@ export function TObstacle() {
   };
 
   this.update = function () {
+    if(isDayMode){
+      spriteDown.setIndex(2);
+      spriteUp.setIndex(3);  
+    }else{
+      spriteDown.setIndex(0);
+      spriteUp.setIndex(1);  
+    }
+  
     posDown.x -= gameSpeed;
     posUp.x -= gameSpeed;
     spriteDown.updateDestination(posDown.x, posDown.y);
@@ -558,6 +587,12 @@ export function initGame(aEvent) {
 
 export function muteSound(aEvent){
   soundMuted = aEvent.target.checked;
+}
+
+export function setDayNight(aEvent){
+  isDayMode = parseInt(aEvent.target.value);
+  gameProps.background.setDay(isDayMode);
+  gameProps.hero.setDay(isDayMode);
 }
 
 function cvsKeyPress(aEvent) {
