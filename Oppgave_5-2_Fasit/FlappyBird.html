@@ -33,6 +33,9 @@
       "use strict";
       import * as FlappyBird from "./FlappyBird.js"
       document.addEventListener("DOMContentLoaded", FlappyBird.initGame);
+      const chkMuteSound = document.getElementById("chkMuteSound");
+      chkMuteSound.addEventListener("change", FlappyBird.muteSound);
+
     </script>
   </body>
 </html>

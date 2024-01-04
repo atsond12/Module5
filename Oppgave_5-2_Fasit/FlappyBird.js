@@ -1,5 +1,5 @@
 "use strict";
-import { TSprite, TSpriteButton } from "../lib/libSprite.js";
+import { TSprite, TSpriteButton, TSpriteNumber } from "../lib/libSprite.js";
 import { TPoint, TSinesWave } from "../lib/lib2D.js";
 import { TSound } from "../lib/libSound.js";
 
@@ -32,27 +32,49 @@ let ctx = null;
 let imgSheet = null;
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
+let soundMuted = false;
 
 const gameProps = {
   background: null,
   hero: null,
   countDown: null,
   flappyBirdText: null,
+  obstacles: [],
+  score: null,
+  gameOverMenu: null,
+  foods: [],
+  music: null
 };
 
-let gameSpeed = 4;
+let gameSpeed = 0.5;
+
+const timeSpawnObstacle = {
+  timeLast: 0,
+  timeSpawn: 0,
+};
+
+const timeSpawnFood = {
+  timeLast: 0,
+  timeSpawn: 0,
+};
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
 
+//---------------------------------------------------------------
+//----- Class TBackground ---------------------------------------
+//---------------------------------------------------------------
 function TBackground() {
   const spBackground = new TSprite(cvs, imgSheet, SheetData.background, { x: 0, y: 0 });
   const groundPos = new TPoint(0, groundLevel);
   const ground = new TSprite(cvs, imgSheet, SheetData.ground, groundPos);
 
-  this.draw = function () {
+  this.drawBackground = function () {
     spBackground.draw();
+  };
+
+  this.drawGround = function () {
     ground.draw();
   };
 
@@ -65,15 +87,23 @@ function TBackground() {
   };
 } // End of class TBackground
 
+//---------------------------------------------------------------
+//----- Class THero ---------------------------------------------
+//---------------------------------------------------------------
 function THero() {
   const heroPos = new TPoint(70, 170);
-  const spHero = new TSprite(cvs, imgSheet, SheetData.hero, heroPos);
-  const sinWave = new TSinesWave(heroPos.y, 1, 25);
-  const gravity = 9.81 / gameSpeed;
+  const sprite = new TSprite(cvs, imgSheet, SheetData.hero, heroPos);
+  sprite.setSpeed(100);
+  const sinWave = new TSinesWave(heroPos.y, 0.1, 25);
+  const gravity = 9.81 / gameSpeed / 1000;
   let speed = 0;
 
+  const soundFood = new TSound("./media/food.mp3");
+  const soundIsDead = new TSound("./media/heroIsDead.mp3");
+  const soundGameOver = new TSound("./media/gameOver.mp3");
+
   this.draw = function () {
-    spHero.draw();
+    sprite.draw();
   };
 
   this.update = function () {
@@ -81,65 +111,55 @@ function THero() {
     heroPos.y += speed;
     const height = groundLevel - (heroPos.y + SheetData.hero.height);
     if (height > 0) {
-      spHero.animate();
-      spHero.setRotation(speed * 2);
+      sprite.animate();
+      let rotAngle = speed * 20;
+      if (rotAngle > 90) {
+        rotAngle = 90;
+      }
+      sprite.setRotation(rotAngle);
     } else {
       heroPos.y = groundLevel - SheetData.hero.height;
       gameStatus = EGameStatus.GameOver;
+      playSound(soundGameOver);
+      gameProps.music.stop();
     }
-    spHero.updateDestination(heroPos.x, heroPos.y);
+    sprite.updateDestination(heroPos.x, heroPos.y);
   };
 
   this.hover = function () {
     sinWave.getWaveValue();
     heroPos.y = sinWave.getWaveValue();
-    spHero.updateDestination(heroPos.x, heroPos.y);
-    spHero.animate();
+    sprite.updateDestination(heroPos.x, heroPos.y);
+    sprite.animate();
   };
 
   this.flap = function () {
-    speed = -(gravity * 7);
+    speed = -(gravity * 60);
   };
-}
 
-function TNumber(aCanvas, aSpi, aPos) {
-  const cvs = aCanvas;
-  const spi = aSpi;
-  const pos = aPos;
-  const spNumbers = [];
-  let alpha = 100;
-  this.draw = function () {
-    for (let i = 0; i < spNumbers.length; i++) {
-      spNumbers[i].draw();
+  this.eatFood = function (aFoodSprite) {
+    if (aFoodSprite.areSpritesColliding(sprite)) {
+      const distance = aFoodSprite.getDistanceToSpriteCenter(sprite);
+      if (distance < 20) {
+        playSound(soundFood);
+        return true;
+      }
     }
+    return false;
   };
 
-  this.setAlpha = function (aAlpha) {
-    alpha = aAlpha;
-  };
-
-  this.setValue = function (aValue) {
-    let divider = 1;
-    const digits = aValue.toString().length;
-    if (digits > spNumbers.length) {
-      do {
-        const newPos = new TPoint(pos.x - (spi.width + 1) * spNumbers.length, pos.y);
-        const newSprite = new TSprite(cvs, imgSheet, spi, newPos);
-        newSprite.setAlpha(alpha);
-        spNumbers.push(newSprite);
-      } while (spNumbers.length < digits);
-    } else if (digits < spNumbers.length) {
-      do {
-        spNumbers.pop();
-      } while (spNumbers.length < digits);
+  this.hitObstacle = function (aObstacleSprite) {
+    const hit = aObstacleSprite.areSpritesColliding(sprite); 
+    if(hit){
+      playSound(soundIsDead);
     }
-    for (let i = 0; i < spNumbers.length; i++) {
-      spNumbers[i].setIndex(Math.floor(aValue / divider) % 10);
-      divider *= 10;
-    }
+    return hit;
   };
-} // End of class TNumber
+} // End of THero
 
+//---------------------------------------------------------------
+//----- Class TCountDown ----------------------------------------
+//---------------------------------------------------------------
 function TCountDown() {
   const spiInfoText = SheetData.infoText;
   const posInfoText = new TPoint(185, 100);
@@ -147,9 +167,8 @@ function TCountDown() {
   spriteInfoText.setIndex(0);
   const sound = new TSound("./media/countDown.mp3");
 
-  const spiNumber = SheetData.numberBig;
   const posNumber = new TPoint(270, 170);
-  const number = new TNumber(cvs, spiNumber, posNumber);
+  const number = new TSpriteNumber(cvs, imgSheet, SheetData.numberBig, posNumber);
   let value = 3;
   number.setValue(value);
 
@@ -160,6 +179,7 @@ function TCountDown() {
       setTimeout(countDown, 1000);
     } else {
       gameStatus = EGameStatus.Playing;
+      playSound(gameProps.music);
     }
   }
 
@@ -169,12 +189,198 @@ function TCountDown() {
   };
 
   this.start = function () {
+    value = 3;
     number.setValue(value);
     setTimeout(countDown, 1000);
-    sound.play();
+    playSound(sound);
   };
 } // End of class TCountDown
 
+//---------------------------------------------------------------
+//----- Class TObstacle -----------------------------------------
+//---------------------------------------------------------------
+export function TObstacle() {
+  const posDown = new TPoint(576, 398 - 25);
+  const spa = SheetData.obstacle;
+  const spriteDown = new TSprite(cvs, imgSheet, spa, posDown);
+  const posUp = new TPoint(576, -320 + 25);
+  const spriteUp = new TSprite(cvs, imgSheet, spa, posUp);
+  let scoreValue = 0;
+  this.isOutOfBounds = false;
+  this.heroHasPassed = false;
+
+  spriteDown.setIndex(2);
+  spriteUp.setIndex(3);
+
+  function setGap() {
+    const gap = Math.ceil(Math.random() * 170) + 70;
+    const maxDown = 398 - 25;
+    const maxTop = 25 + gap;
+    const height = Math.ceil(Math.random() * (maxDown - maxTop)) + maxTop;
+    posDown.y = height;
+    posUp.y = height - gap - 320;
+    scoreValue = Math.floor((500 - gap) / 10);
+  }
+
+  this.draw = function () {
+    spriteDown.draw();
+    spriteUp.draw();
+  };
+
+  this.update = function () {
+    posDown.x -= gameSpeed;
+    posUp.x -= gameSpeed;
+    spriteDown.updateDestination(posDown.x, posDown.y);
+    spriteUp.updateDestination(posUp.x, posUp.y);
+    const left = posDown.x + 52;
+    if (left < 50) {
+      this.heroHasPassed = true;
+      if (left < 0) {
+        this.isOutOfBounds = true;
+      }
+    }
+  };
+
+  this.checkIfHeroHasHit = function () {
+    const collideWithDown = gameProps.hero.hitObstacle(spriteDown);
+    const collideWithUp = gameProps.hero.hitObstacle(spriteUp);
+    return collideWithDown || collideWithUp;
+  };
+
+  this.updateScore = function () {
+    if (scoreValue > 0) {
+      gameProps.score.addScore(scoreValue);
+      scoreValue = 0;
+    }
+  };
+  setGap();
+} // End of class TObstacle
+
+//---------------------------------------------------------------
+//----- Class TScore --------------------------------------------
+//---------------------------------------------------------------
+function TScore() {
+  const posScore = new TPoint(40, 10);
+  const numberScore = new TSpriteNumber(cvs, imgSheet, SheetData.numberSmall, posScore);
+  let score = 0;
+  numberScore.setAlpha(50);
+  numberScore.setValue(score);
+
+  this.draw = function () {
+    numberScore.draw();
+  };
+
+  this.addScore = function (aValue) {
+    score += aValue;
+    numberScore.setValue(score);
+    gameProps.gameOverMenu.setFinalScore(score);
+  };
+
+  this.resetScore = function () {
+    score = 0;
+    numberScore.setValue(score);
+  };
+} // End of class TScore
+
+//---------------------------------------------------------------
+//----- Class TGameOverMenu -------------------------------------
+//---------------------------------------------------------------
+function TGameOverMenu() {
+  let scoreFinal = 0;
+  let scoreGold = 0;
+  let scoreSilver = 0;
+  let scoreBronze = 0;
+  const posInfoText = new TPoint(185, 50);
+  const spriteInfoText = new TSprite(cvs, imgSheet, SheetData.infoText, posInfoText);
+  spriteInfoText.setIndex(1);
+
+  const posBoard = new TPoint(175, 110);
+  const spriteBoard = new TSprite(cvs, imgSheet, SheetData.gameOver, posBoard);
+
+  const posFinalScore = new TPoint(365, 142);
+  const numberFinalScore = new TSpriteNumber(cvs, imgSheet, SheetData.numberSmall, posFinalScore);
+  numberFinalScore.setValue(scoreFinal);
+
+  const posHighScore = new TPoint(365, 184);
+  const numberHighScore = new TSpriteNumber(cvs, imgSheet, SheetData.numberSmall, posHighScore);
+  numberHighScore.setValue(scoreGold);
+
+  const posMedal = new TPoint(201, 153);
+  const spriteMedal = new TSprite(cvs, imgSheet, SheetData.medal, posMedal);
+
+  this.draw = function () {
+    spriteInfoText.draw();
+    spriteBoard.draw();
+    numberFinalScore.draw();
+    numberHighScore.draw();
+    spriteMedal.draw();
+  };
+
+  this.setFinalScore = function (aValue) {
+    scoreFinal = aValue;
+    if (scoreFinal > scoreGold) {
+      scoreGold = scoreFinal;
+      spriteMedal.setIndex(2);
+      console.log("scoreGold   =", scoreGold);
+    } else if (scoreFinal > scoreSilver) {
+      scoreSilver = scoreFinal;
+      spriteMedal.setIndex(1);
+      console.log("scoreSilver =", scoreSilver);
+    } else if (scoreFinal > scoreBronze) {
+      spriteMedal.setIndex(3);
+      scoreBronze = scoreFinal;
+      console.log("scoreBronze =", scoreBronze);
+    } else {
+      spriteMedal.setIndex(0);
+    }
+    numberFinalScore.setValue(scoreFinal);
+    numberHighScore.setValue(scoreGold);
+  };
+} // End of class TGameOverMenu
+
+//---------------------------------------------------------------
+//----------- Class TFood ---------------------------------------
+//---------------------------------------------------------------
+function TFood() {
+  const pos = new TPoint(570, 100);
+  const sprite = new TSprite(cvs, imgSheet, SheetData.food, pos);
+  const amp = Math.ceil(Math.random() * 50) + 70;
+  const freq = Math.ceil(Math.random() * 2) / 100;
+  const sinWave = new TSinesWave(pos.y, freq, amp);
+  pos.y = sinWave.getWaveValue();
+  const speed = Math.ceil(Math.random() * 5) / 10;
+  sprite.setSpeed(speed * 100);
+  //const rect = sprite.getRectangle();
+  let score = 20;
+  this.eaten = false;
+
+  this.draw = function () {
+    sprite.draw();
+  };
+
+  this.update = function () {
+    pos.y = sinWave.getWaveValue();
+    switch (gameStatus) {
+      case EGameStatus.GameOver:
+      case EGameStatus.HeroIsDead:
+        pos.x += speed * gameSpeed;
+        break;
+      default:
+        pos.x -= gameSpeed / 2;
+        break;
+    }
+    sprite.updateDestination(pos.x, pos.y);
+    sprite.animate();
+
+    if (!this.eaten) {
+      if (gameProps.hero.eatFood(sprite)) {
+        this.eaten = true;
+        gameProps.score.addScore(score);
+        score = 0;
+      }
+    }
+  };
+} // End of class TFood
 //-----------------------------------------------------------------------------------------
 //----------- functions -------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
@@ -191,21 +397,31 @@ function loadGame() {
   gameProps.flappyBirdText = new TSprite(cvs, imgSheet, SheetData.flappyBird, { x: 195, y: 130 });
   gameProps.hero = new THero();
   //gameProps.hero.
-  gameProps.startButton = new TSpriteButton(cvs, imgSheet, SheetData.btnStartGame, { x: 230, y: 200 }, runGame);
+  gameProps.startButton = new TSpriteButton(cvs, imgSheet, SheetData.btnStartGame, { x: 235, y: 250 }, runGame);
   gameProps.countDown = new TCountDown();
+  gameProps.score = new TScore();
+  gameProps.gameOverMenu = new TGameOverMenu();
+  gameProps.music = new TSound("./media/running.mp3");
+
   requestAnimationFrame(drawGame);
-  setInterval(updateGame, 50);
+  setInterval(updateGame, 1);
+  //runGame();
 }
 
 function runGame(aEvent) {
   gameProps.startButton.disabled = true;
-  gameStatus = EGameStatus.GetReady;
+  //gameStatus = EGameStatus.Playing;
+  gameProps.score.resetScore();
+  gameProps.obstacles.length = 0;
+  gameProps.foods.length = 0;
+  gameProps.hero = new THero();
   gameProps.countDown.start();
+  gameStatus = EGameStatus.GetReady;
 }
 
 function drawGame() {
   ctx.clearRect(0, 0, cvs.width, cvs.height);
-  gameProps.background.draw();
+  gameProps.background.drawBackground();
   switch (gameStatus) {
     case EGameStatus.Idle:
       gameProps.flappyBirdText.draw();
@@ -214,8 +430,24 @@ function drawGame() {
     case EGameStatus.GetReady:
       gameProps.countDown.draw();
       break;
+    case EGameStatus.Playing:
+      break;
   }
   gameProps.hero.draw();
+  for (let i = 0; i < gameProps.obstacles.length; i++) {
+    const obstacle = gameProps.obstacles[i];
+    obstacle.draw();
+  }
+  for (let i = 0; i < gameProps.foods.length; i++) {
+    const food = gameProps.foods[i];
+    food.draw();
+  }
+  if (gameStatus === EGameStatus.GameOver) {
+    gameProps.gameOverMenu.draw();
+    gameProps.startButton.draw();
+  }
+  gameProps.score.draw();
+  gameProps.background.drawGround();
   requestAnimationFrame(drawGame);
 }
 
@@ -224,18 +456,98 @@ function updateGame() {
     case EGameStatus.Playing:
       gameProps.background.update();
       gameProps.hero.update();
+      spawnObstacle();
+      spawnFood();
+      for (let i = 0; i < gameProps.obstacles.length; i++) {
+        const obstacle = gameProps.obstacles[i];
+        obstacle.update();
+        const hit = obstacle.checkIfHeroHasHit();
+        if (hit) {
+          gameStatus = EGameStatus.HeroIsDead;
+        }
+        if (obstacle.heroHasPassed) {
+          obstacle.updateScore();
+        }
+      }
+      if (gameProps.obstacles.length) {
+        if (gameProps.obstacles[0].isOutOfBounds) {
+          gameProps.obstacles.shift();
+        }
+      }
+      let eatenIndex = -1;
+      for (let i = 0; i < gameProps.foods.length; i++) {
+        const food = gameProps.foods[i];
+        food.update();
+        if (food.eaten) {
+          eatenIndex = i;
+        }
+      }
+      if (eatenIndex > -1) {
+        gameProps.foods.splice(eatenIndex, 1);
+      }
       break;
     case EGameStatus.GetReady:
     case EGameStatus.Idle:
       gameProps.hero.hover();
       break;
+    case EGameStatus.HeroIsDead:
+      gameProps.hero.update();
+      for (let i = 0; i < gameProps.foods.length; i++) {
+        const food = gameProps.foods[i];
+        food.update();
+      }
+      break;
+    case EGameStatus.GameOver:
+      gameProps.startButton.disabled = false;
+      for (let i = 0; i < gameProps.foods.length; i++) {
+        const food = gameProps.foods[i];
+        food.update();
+      }
+      break;
+  }
+}
+
+function spawnObstacle() {
+  const time = Date.now();
+  if (timeSpawnObstacle.timeLast === 0) {
+    timeSpawnObstacle.timeLast = time;
+    timeSpawnObstacle.timeSpawn = 1500;
+    return;
+  }
+  const timeDelta = time - timeSpawnObstacle.timeLast;
+  if (timeDelta > timeSpawnObstacle.timeSpawn) {
+    const obstacle = new TObstacle();
+    gameProps.obstacles.push(obstacle);
+    timeSpawnObstacle.timeLast = time;
+    timeSpawnObstacle.timeSpawn = 1000 / gameSpeed + Math.floor(Math.random() * 3) * 1000;
+  }
+}
+
+function spawnFood() {
+  const time = Date.now();
+  if (timeSpawnFood.timeLast === 0) {
+    timeSpawnFood.timeLast = time;
+    timeSpawnFood.timeSpawn = 1500;
+    return;
+  }
+  const timeDelta = time - timeSpawnFood.timeLast;
+  if (timeDelta > timeSpawnFood.timeSpawn) {
+    const food = new TFood();
+    gameProps.foods.push(food);
+    timeSpawnFood.timeLast = time;
+    timeSpawnFood.timeSpawn = 1000 / gameSpeed + Math.floor(Math.random() * 3) * 1000;
+  }
+}
+
+function playSound(aSound){
+  if(!soundMuted){
+    aSound.play();
   }
 }
 
 //-----------------------------------------------------------------------------------------
 //----------- Events ----------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
-
 export function initGame(aEvent) {
   console.log("Initializing the game");
   imgSheet = new Image();
@@ -244,11 +556,18 @@ export function initGame(aEvent) {
   imgSheet.src = "./media/spriteSheet.png";
 }
 
+export function muteSound(aEvent){
+  soundMuted = aEvent.target.checked;
+}
+
 function cvsKeyPress(aEvent) {
-  if (aEvent.which === 32) {
-    gameProps.hero.flap();
+  switch (gameStatus) {
+    case EGameStatus.Playing:
+      if (aEvent.which === 32) {
+        gameProps.hero.flap();
+      }
+      break;
   }
-  console.log(aEvent.which);
 }
 
 function imgSheetLoad(aEvent) {
