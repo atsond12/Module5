@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprite Example</title>
+</head>
+<body>
+  <canvas id="cvs" width="500" height="300" style="background-color: antiquewhite;"></canvas>
+  <script>
+    let cvs = null;
+    let ctx = null;
+
+    const img = new Image();
+    img.addEventListener("load", runGame);
+    img.src = "./media/sonic_sprite_sheet.png";
+
+    function runGame(){
+      cvs = document.getElementById("cvs");
+      ctx = cvs.getContext("2d");
+      setInterval(drawGame, 200);
+    }
+
+    const sonic = {
+      x: 0, y: 120, width: 102, height: 120, count: 6
+    }
+
+    let frame = 0;
+    const pos = {x: 0, y: 100};
+
+    function drawGame(){
+      const sx = sonic.x + (sonic.width * frame);
+      const sy = sonic.y;
+      const sw = sonic.width;
+      const sh = sonic.height;
+
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+      ctx.drawImage(img, sx , sy, sw, sh, pos.x, pos.y,  sw, sh);
+      frame = frame + 1;
+      pos.x += 10;
+      if(frame >= sonic.count){
+        frame = 0;
+      }
+    }
+
+
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Robot Arm Fasit</title>
+  </head>
+  <body>
+    <script type="module">
+      import {TArduinoProtocol, EProtocolDataType} from "../../lib/libRobot.js";
+
+      const protocolBuffer = TArduinoProtocol(EProtocolDataType.pdtMoveStepper, 1, 50);
+      // Now you can use 'protocolBuffer' for sending over the serial connection
+      console.log("Generated Protocol and Data:", protocolBuffer);
+
+      
+
+
+    </script>
+  </body>
+</html>

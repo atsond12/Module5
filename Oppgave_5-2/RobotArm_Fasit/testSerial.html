@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test serial port</title>
+  </head>
+  <body>
+    <h1>Test Serial Port</h1>
+
+    <button onclick="searchPorts()">Search for Ports</button>
+
+    <label for="portList">Available Ports:</label>
+    <select id="portList"></select>
+
+    <button onclick="togglePort()">Open</button>
+
+    <label for="dataInput">Send Data:</label>
+    <input type="text" id="dataInput" disabled />
+    <button onclick="sendData()" disabled>Send</button>
+
+    <script>
+      "use strict";
+      let port;
+      const portList = document.getElementById("portList");
+      const dataInput = document.getElementById("dataInput");
+      const toggleButton = document.querySelector('button[onclick="togglePort()"]');
+
+      function searchPorts() {
+        portList.innerHTML = ""; // Clear the previous list
+
+        // Use the 'serialport' library to search for available ports
+        navigator.serial
+          .getPorts()
+          .then((ports) => {
+            const portInfos = [];
+            ports.forEach((port) => {
+              const info = port.getInfo();
+              portInfos.push(info);
+              console.log(info);
+            });
+            fillPortList(portInfos);
+          })
+          .catch((err) => {
+            console.error("Error searching for ports:", err.message);
+          });
+      }
+
+      function fillPortList(aPorts) {
+        aPorts.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item.usbVendorId;
+          option.text = item.usbProductId;
+          portList.add(option);
+        });
+      }
+
+      function togglePort() {
+        if (!port) {
+          const usbVendorId = portList.value;
+          if (usbVendorId) {
+            navigator.serial
+              .requestPort({ filters: [{ usbVendorId }] })
+              .then((aPort) => {
+                port = aPort;
+              })
+              .catch((e) => {
+                console.log(e);
+              });
+          } else {
+            console.error("No port selected");
+          }
+        } else {
+          port.close((err) => {
+            if (err) {
+              console.error("Error closing port:", err.message);
+            } else {
+              console.log("Port closed");
+              dataInput.setAttribute("disabled", true);
+              document.querySelector('button[onclick="sendData()"]').setAttribute("disabled", true);
+              toggleButton.textContent = "Open";
+              port = null;
+            }
+          });
+        }
+      }
+
+      function sendData() {
+        const inputData = dataInput.value;
+        // You can implement code here to send data to the serial port
+        console.log("Sending data:", inputData);
+      }
+    </script>
+  </body>
+</html>
