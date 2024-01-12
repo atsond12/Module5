@@ -83,8 +83,11 @@ function THero(){
 
 function TObstacle(){
   let left = SheetData.background.width;
-  let heightBottom = 200;
-  let heightTop = heightBottom - SheetData.obstacle.height - 50;
+  const gap = Math.floor(Math.random() * 70) + 90;
+  let heightBottom = groundLevel - 25;
+  heightBottom = heightBottom - gap;
+  heightBottom = Math.floor(Math.random() * (heightBottom - 25)) + 125; 
+  let heightTop = heightBottom - SheetData.obstacle.height - gap;
   let pos = new TPoint(left, heightBottom);
   const spBottom = new TSprite(cvs, imgSheet, SheetData.obstacle, pos);
   pos = new TPoint(left, heightTop);
