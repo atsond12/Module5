@@ -37,6 +37,7 @@ const gameProps = {
  background: null,
  ground: null,
  hero: null,
+ obstacle: null,
 };
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
@@ -80,6 +81,31 @@ function THero(){
 
 }// End of class THero
 
+function TObstacle(){
+  let left = SheetData.background.width;
+  let heightBottom = 200;
+  let heightTop = heightBottom - SheetData.obstacle.height - 50;
+  let pos = new TPoint(left, heightBottom);
+  const spBottom = new TSprite(cvs, imgSheet, SheetData.obstacle, pos);
+  pos = new TPoint(left, heightTop);
+  const spTop = new TSprite(cvs, imgSheet, SheetData.obstacle, pos);
+  spBottom.setIndex(2);
+  spTop.setIndex(3);
+  
+
+  this.draw = function(){
+    spBottom.draw();
+    spTop.draw();
+  }
+
+  this.update = function(){
+    left = left - 1;
+    spBottom.updateDestination(left, heightBottom);
+    spTop.updateDestination(left, heightTop);
+  }
+}// End of class TObstacle
+
+
 //-----------------------------------------------------------------------------------------
 //----------- functions -------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
@@ -93,6 +119,7 @@ function loadGame() {
   gameProps.background = new TSprite(cvs, imgSheet, SheetData.background,{x:0 , y:0});
   gameProps.ground = new TGround();
   gameProps.hero = new THero();
+  gameProps.obstacle = new TObstacle();
 
   requestAnimationFrame(drawGame);
   console.log("Game canvas is rendering!");
@@ -103,14 +130,15 @@ function loadGame() {
 //-----------------------------------------------------------------------------------------
 
 function drawGame() {
-  calculateFPSNormal();
+  //calculateFPSNormal();
   ctx.clearRect(0, 0, cvs.width, cvs.height);
 
   gameProps.background.draw();
+  gameProps.obstacle.draw();
   gameProps.ground.draw();
   gameProps.hero.draw();
 
-  drawFPS();
+  //drawFPS();
   requestAnimationFrame(drawGame);
 }
 //-----------------------------------------------------------------------------------------
@@ -128,6 +156,7 @@ function updateGame() {
   // Update game logics here!
   gameProps.ground.update();
   gameProps.hero.update();
+  gameProps.obstacle.update();
   UPS.previousTime = UPS.currentTime;
 }
 //-----------------------------------------------------------------------------------------
