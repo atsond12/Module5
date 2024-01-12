@@ -2,8 +2,8 @@
 //-----------------------------------------------------------------------------------------
 //----------- Import modules, js files  ---------------------------------------------------
 //-----------------------------------------------------------------------------------------
-import {TSprite} from "../lib/libSprite.js";
-import {TPoint, TSinesWave} from "../lib/lib2D.js";
+import { TSprite } from "../lib/libSprite.js";
+import { TPoint, TSinesWave } from "../lib/lib2D.js";
 
 //-----------------------------------------------------------------------------------------
 //----------- variables and object --------------------------------------------------------
@@ -26,67 +26,76 @@ const SheetData = {
   medal: { x: 985, y: 635, width: 44, height: 44, count: 44 },
 };
 
-const FPS = { frames: 0, startTime: performance.now(), FPSNormal: 0};
-const UPS = { current: performance.now(), previous: performance.now(), delta: 0};
+const FPS = { frames: 0, startTime: performance.now(), FPSNormal: 0 };
+const UPS = { current: performance.now(), previous: performance.now(), delta: 0 };
 
 let cvs = null;
 let ctx = null;
 let imgSheet = null;
 
 const gameProps = {
- background: null,
- ground: null,
- hero: null,
- obstacle: null,
+  background: null,
+  ground: null,
+  hero: null,
+  obstacles: [],
 };
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
+let lastSpawnObstacleTime = 0;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
 
-function TGround(){
+function TGround() {
   const pos = new TPoint(0, groundLevel);
   const sp = new TSprite(cvs, imgSheet, SheetData.ground, pos);
 
-  this.draw = function(){
+  this.draw = function () {
     sp.draw();
-  }
+  };
 
-  this.update = function(){
+  this.update = function () {
     pos.x = pos.x - 1;
-    if(pos.x <= -SheetData.background.width){
+    if (pos.x <= -SheetData.background.width) {
       pos.x = 0;
     }
     sp.updateDestination(pos.x, pos.y);
-  }
-}// End of class TGround
+  };
+} // End of class TGround
 
-function THero(){
+function THero() {
   const pos = new TPoint(100, 150);
   const sp = new TSprite(cvs, imgSheet, SheetData.hero1, pos);
   const wave = new TSinesWave(pos.y, 0.8, 30);
   sp.setSpeed(25);
+  const G = 9.81 / 50;
+  let speed = 0;
 
-  this.draw = function(){
+  this.draw = function () {
     sp.draw();
-  }
+  };
 
-  this.update = function(){
+  this.update = function () {
     sp.animate();
-    pos.y = wave.getWaveValue();
+    speed += G;
+    pos.y += speed;
+    sp.setRotation(speed * 7);
+    //pos.y = wave.getWaveValue(); Denne skal brukes senere i "idle mode"
     sp.updateDestination(pos.x, pos.y);
+  };
+
+  this.flap = function(){
+    speed = -3;
   }
+} // End of class THero
 
-}// End of class THero
-
-function TObstacle(){
+function TObstacle() {
   let left = SheetData.background.width;
   const gap = Math.floor(Math.random() * 70) + 90;
   let heightBottom = groundLevel - 25;
   heightBottom = heightBottom - gap;
-  heightBottom = Math.floor(Math.random() * (heightBottom - 25)) + 125; 
+  heightBottom = Math.floor(Math.random() * (heightBottom - 25)) + 125;
   let heightTop = heightBottom - SheetData.obstacle.height - gap;
   let pos = new TPoint(left, heightBottom);
   const spBottom = new TSprite(cvs, imgSheet, SheetData.obstacle, pos);
@@ -94,20 +103,23 @@ function TObstacle(){
   const spTop = new TSprite(cvs, imgSheet, SheetData.obstacle, pos);
   spBottom.setIndex(2);
   spTop.setIndex(3);
-  
 
-  this.draw = function(){
+  this.deSpawn = false;
+
+  this.draw = function () {
     spBottom.draw();
     spTop.draw();
-  }
+  };
 
-  this.update = function(){
+  this.update = function () {
     left = left - 1;
     spBottom.updateDestination(left, heightBottom);
     spTop.updateDestination(left, heightTop);
-  }
-}// End of class TObstacle
-
+    if (left < -SheetData.obstacle.width) {
+      this.deSpawn = true;
+    }
+  };
+} // End of class TObstacle
 
 //-----------------------------------------------------------------------------------------
 //----------- functions -------------------------------------------------------------------
@@ -119,10 +131,11 @@ function loadGame() {
   cvs.height = SheetData.background.height;
   ctx = cvs.getContext("2d");
 
-  gameProps.background = new TSprite(cvs, imgSheet, SheetData.background,{x:0 , y:0});
+  gameProps.background = new TSprite(cvs, imgSheet, SheetData.background, { x: 0, y: 0 });
   gameProps.ground = new TGround();
   gameProps.hero = new THero();
-  gameProps.obstacle = new TObstacle();
+
+  document.addEventListener("keypress", keyPress);
 
   requestAnimationFrame(drawGame);
   console.log("Game canvas is rendering!");
@@ -137,7 +150,9 @@ function drawGame() {
   ctx.clearRect(0, 0, cvs.width, cvs.height);
 
   gameProps.background.draw();
-  gameProps.obstacle.draw();
+  for (let i = 0; i < gameProps.obstacles.length; i++) {
+    gameProps.obstacles[i].draw();
+  }
   gameProps.ground.draw();
   gameProps.hero.draw();
 
@@ -159,22 +174,41 @@ function updateGame() {
   // Update game logics here!
   gameProps.ground.update();
   gameProps.hero.update();
-  gameProps.obstacle.update();
+  for (let i = 0; i < gameProps.obstacles.length; i++) {
+    gameProps.obstacles[i].update();
+  }
+
+  if (gameProps.obstacles.length) {
+    if (gameProps.obstacles[0].deSpawn) {
+      gameProps.obstacles.splice(0, 1);
+    }
+  }
+
+  spawnObstacle();
   UPS.previousTime = UPS.currentTime;
 }
 //-----------------------------------------------------------------------------------------
 
 function calculateFPSNormal() {
   FPS.frames++;
-	const t = performance.now();
-	const dt = t - FPS.startTime;
-	if( dt > 1000 ) {
-		FPS.FPSNormal = FPS.frames * 1000 / dt;
-		FPS.frames = 0;
-		FPS.startTime = t;
-	}
+  const t = performance.now();
+  const dt = t - FPS.startTime;
+  if (dt > 1000) {
+    FPS.FPSNormal = (FPS.frames * 1000) / dt;
+    FPS.frames = 0;
+    FPS.startTime = t;
+  }
 }
 //-----------------------------------------------------------------------------------------
+
+function spawnObstacle() {
+  const delta = UPS.current - lastSpawnObstacleTime;
+  const createNewObstacle = delta > 3000;
+  if (createNewObstacle) {
+    gameProps.obstacles.push(new TObstacle());
+    lastSpawnObstacleTime = UPS.current;
+  }
+}
 
 //-----------------------------------------------------------------------------------------
 //----------- Events ----------------------------------------------------------------------
@@ -198,3 +232,10 @@ function imgSheetError(aEvent) {
   console.log("Error loading Sprite Sheet!", aEvent.target.src);
 }
 //-----------------------------------------------------------------------------------------
+
+function keyPress(aEvent){
+  if(aEvent.code === "Space"){
+    gameProps.hero.flap();
+  }
+  
+} 
