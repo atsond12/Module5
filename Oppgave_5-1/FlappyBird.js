@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------------------
 import { TSprite } from "../lib/libSprite.js";
 import { TPoint, TSinesWave } from "../lib/lib2D.js";
+import { TGameMenu } from "./gameMenu.js";
 
 //-----------------------------------------------------------------------------------------
 //----------- variables and object --------------------------------------------------------
@@ -38,13 +39,14 @@ const gameProps = {
   ground: null,
   hero: null,
   obstacles: [],
+  gameMenu: null,
 };
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
 let lastSpawnObstacleTime = 0;
 
-const EGameStatusType = {Idle: 1, HeroIsDead: 2, GameOver: 3 };
-let gameStatus = EGameStatusType.Idle; 
+const EGameStatusType = { Idle: 1, CountDown: 2, Running: 3, HeroIsDead: 4, GameOver: 5 };
+let gameStatus = EGameStatusType.Idle;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
@@ -84,18 +86,26 @@ function THero() {
     speed += G;
     pos.y += speed;
     sp.setRotation(speed * 7);
-    //pos.y = wave.getWaveValue(); Denne skal brukes senere i "idle mode"
+    if(pos.y >= groundLevel){
+      gameStatus = EGameStatusType.GameOver;
+      pos.y = groundLevel - SheetData.hero1.height;
+    }
+    
     sp.updateDestination(pos.x, pos.y);
   };
 
-  this.flap = function(){
+  this.updateIdle = function(){
+    pos.y = wave.getWaveValue();
+    sp.updateDestination(pos.x, pos.y);
+  }
+
+  this.flap = function () {
     speed = -3;
-  }
+  };
 
-  this.getSprite = function(){
+  this.getSprite = function () {
     return sp;
-  }
-
+  };
 } // End of class THero
 
 function TObstacle() {
@@ -129,7 +139,7 @@ function TObstacle() {
     const spHero = gameProps.hero.getSprite();
     const collideBottom = spBottom.areSpritesColliding(spHero);
     const collideTop = spTop.areSpritesColliding(spHero);
-    if(collideBottom || collideTop){
+    if (collideBottom || collideTop) {
       gameStatus = EGameStatusType.HeroIsDead;
     }
   };
@@ -148,6 +158,7 @@ function loadGame() {
   gameProps.background = new TSprite(cvs, imgSheet, SheetData.background, { x: 0, y: 0 });
   gameProps.ground = new TGround();
   gameProps.hero = new THero();
+  gameProps.gameMenu = new TGameMenu(cvs, imgSheet, SheetData);
 
   document.addEventListener("keypress", keyPress);
 
@@ -170,6 +181,12 @@ function drawGame() {
   gameProps.ground.draw();
   gameProps.hero.draw();
 
+  if(gameStatus === EGameStatusType.Idle){
+    gameProps.gameMenu.drawIdle();
+  }else if(gameStatus === EGameStatusType.CountDown){
+    gameProps.gameMenu.drawCountDown();
+  }
+
   //drawFPS();
   requestAnimationFrame(drawGame);
 }
@@ -186,19 +203,25 @@ function updateGame() {
   UPS.current = performance.now();
   UPS.dt = (UPS.current - UPS.previous) / 1000;
   // Update game logics here!
-  gameProps.ground.update();
-  gameProps.hero.update();
-  for (let i = 0; i < gameProps.obstacles.length; i++) {
-    gameProps.obstacles[i].update();
+  if(gameStatus === EGameStatusType.Idle){
+    gameProps.hero.updateIdle();
   }
 
-  if (gameProps.obstacles.length) {
-    if (gameProps.obstacles[0].deSpawn) {
-      gameProps.obstacles.splice(0, 1);
+  if (gameStatus === EGameStatusType.Running) {
+    gameProps.ground.update();
+
+    for (let i = 0; i < gameProps.obstacles.length; i++) {
+      gameProps.obstacles[i].update();
     }
-  }
 
-  spawnObstacle();
+    if (gameProps.obstacles.length) {
+      if (gameProps.obstacles[0].deSpawn) {
+        gameProps.obstacles.splice(0, 1);
+      }
+    }
+    spawnObstacle();
+  }
+  
   UPS.previousTime = UPS.currentTime;
 }
 //-----------------------------------------------------------------------------------------
@@ -224,6 +247,11 @@ function spawnObstacle() {
   }
 }
 
+export function startCountDown(){
+  console.log("Start Count Down!!");
+  gameStatus = EGameStatusType.CountDown;
+}
+
 //-----------------------------------------------------------------------------------------
 //----------- Events ----------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
@@ -247,9 +275,10 @@ function imgSheetError(aEvent) {
 }
 //-----------------------------------------------------------------------------------------
 
-function keyPress(aEvent){
-  if(aEvent.code === "Space"){
-    gameProps.hero.flap();
+function keyPress(aEvent) {
+  if (aEvent.code === "Space") {
+    if(gameStatus === EGameStatusType.Idle){
+      gameProps.hero.flap();
+    }
   }
-  
-} 
+}
