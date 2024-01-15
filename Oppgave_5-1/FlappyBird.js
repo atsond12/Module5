@@ -43,6 +43,9 @@ const gameProps = {
 const groundLevel = SheetData.background.height - SheetData.ground.height;
 let lastSpawnObstacleTime = 0;
 
+const EGameStatusType = {Idle: 1, HeroIsDead: 2, GameOver: 3 };
+let gameStatus = EGameStatusType.Idle; 
+
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
@@ -88,6 +91,11 @@ function THero() {
   this.flap = function(){
     speed = -3;
   }
+
+  this.getSprite = function(){
+    return sp;
+  }
+
 } // End of class THero
 
 function TObstacle() {
@@ -117,6 +125,12 @@ function TObstacle() {
     spTop.updateDestination(left, heightTop);
     if (left < -SheetData.obstacle.width) {
       this.deSpawn = true;
+    }
+    const spHero = gameProps.hero.getSprite();
+    const collideBottom = spBottom.areSpritesColliding(spHero);
+    const collideTop = spTop.areSpritesColliding(spHero);
+    if(collideBottom || collideTop){
+      gameStatus = EGameStatusType.HeroIsDead;
     }
   };
 } // End of class TObstacle
