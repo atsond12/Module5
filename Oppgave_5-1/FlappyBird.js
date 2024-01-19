@@ -5,6 +5,7 @@
 import { TSprite } from "../lib/libSprite.js";
 import { TPoint, TSinesWave } from "../lib/lib2D.js";
 import { TGameMenu } from "./gameMenu.js";
+import { TFood } from "./food.js";
 
 //-----------------------------------------------------------------------------------------
 //----------- variables and object --------------------------------------------------------
@@ -34,12 +35,13 @@ let cvs = null;
 let ctx = null;
 let imgSheet = null;
 
-const gameProps = {
+export const gameProps = {
   background: null,
   ground: null,
   hero: null,
   obstacles: [],
   gameMenu: null,
+  foods: [],
 };
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
@@ -97,6 +99,7 @@ function THero() {
   this.updateIdle = function(){
     pos.y = wave.getWaveValue();
     sp.updateDestination(pos.x, pos.y);
+    sp.animate();
   }
 
   this.flap = function () {
@@ -160,6 +163,8 @@ function loadGame() {
   gameProps.hero = new THero();
   gameProps.gameMenu = new TGameMenu(cvs, imgSheet, SheetData);
 
+  gameProps.foods.push(new TFood(cvs, imgSheet, SheetData));
+
   document.addEventListener("keypress", keyPress);
 
   requestAnimationFrame(drawGame);
@@ -187,6 +192,9 @@ function drawGame() {
     gameProps.gameMenu.drawCountDown();
   }
 
+  for(let i = 0; i < gameProps.foods.length; i++){
+    gameProps.foods[i].draw();
+  }
   //drawFPS();
   requestAnimationFrame(drawGame);
 }
@@ -203,13 +211,13 @@ function updateGame() {
   UPS.current = performance.now();
   UPS.dt = (UPS.current - UPS.previous) / 1000;
   // Update game logics here!
-  if(gameStatus === EGameStatusType.Idle){
+  if((gameStatus === EGameStatusType.Idle) || (gameStatus === EGameStatusType.CountDown)){
     gameProps.hero.updateIdle();
   }
 
   if (gameStatus === EGameStatusType.Running) {
     gameProps.ground.update();
-
+    gameProps.hero.update();
     for (let i = 0; i < gameProps.obstacles.length; i++) {
       gameProps.obstacles[i].update();
     }
@@ -220,6 +228,10 @@ function updateGame() {
       }
     }
     spawnObstacle();
+  }
+
+  if(gameStatus === EGameStatusType.HeroIsDead){
+    gameProps.hero.update();
   }
   
   UPS.previousTime = UPS.currentTime;
@@ -250,6 +262,11 @@ function spawnObstacle() {
 export function startCountDown(){
   console.log("Start Count Down!!");
   gameStatus = EGameStatusType.CountDown;
+  setTimeout(gameProps.gameMenu.updateCountDown, 1000);
+}
+
+export function startGame(){
+  gameStatus = EGameStatusType.Running;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -277,7 +294,7 @@ function imgSheetError(aEvent) {
 
 function keyPress(aEvent) {
   if (aEvent.code === "Space") {
-    if(gameStatus === EGameStatusType.Idle){
+    if(gameStatus === EGameStatusType.Running){
       gameProps.hero.flap();
     }
   }

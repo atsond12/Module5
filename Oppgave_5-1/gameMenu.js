@@ -2,10 +2,11 @@
 "use strict"
 import { TPoint } from "../lib/lib2D.js";
 import { TSprite, TSpriteButton, TSpriteNumber } from "../lib/libSprite.js";
-import { startCountDown } from "./FlappyBird.js"
+import { startCountDown, gameProps, startGame} from "./FlappyBird.js"
 
 export function TGameMenu(aCanvas, aSheetImage, aSheetData){
   const pos = new TPoint(220, 90);
+  
 
   const spFlappyBird = new TSprite(aCanvas, aSheetImage, aSheetData.flappyBird, pos);
   pos.x += 30;
@@ -33,8 +34,8 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
     spNumber.draw();
   }
 
-  this.updateCountDown = function(){
-    const done = false;
+  function doCountDown(){
+    let done = false;
     countDown--;
     spNumber.setValue(countDown);
     if(countDown <= 0){
@@ -44,7 +45,17 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
     return done;
   }
 
+  this.updateCountDown = function(){
+    const isDone = doCountDown();
+    if(isDone === false){
+      setTimeout(gameProps.gameMenu.updateCountDown, 1000);
+    }else{
+      startGame();
+    }
+  }
+
   function buttonClick(){
+    spButton.disabled = true;
     startCountDown();
   }
 }
