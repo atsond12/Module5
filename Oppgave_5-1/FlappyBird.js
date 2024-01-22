@@ -46,9 +46,10 @@ export const gameProps = {
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
 let lastSpawnObstacleTime = 0;
+let lastSpawnFoodTime = 0;
 
-const EGameStatusType = { Idle: 1, CountDown: 2, Running: 3, HeroIsDead: 4, GameOver: 5 };
-let gameStatus = EGameStatusType.Idle;
+export const EGameStatusType = { Idle: 1, CountDown: 2, Running: 3, HeroIsDead: 4, GameOver: 5 };
+export let gameStatus = EGameStatusType.Idle;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
@@ -163,7 +164,6 @@ function loadGame() {
   gameProps.hero = new THero();
   gameProps.gameMenu = new TGameMenu(cvs, imgSheet, SheetData);
 
-  gameProps.foods.push(new TFood(cvs, imgSheet, SheetData));
 
   document.addEventListener("keypress", keyPress);
 
@@ -228,12 +228,15 @@ function updateGame() {
       }
     }
     spawnObstacle();
+
   }
 
   if(gameStatus === EGameStatusType.HeroIsDead){
     gameProps.hero.update();
   }
-  
+  spawnFood();  
+  gameProps.foods.forEach(food => food.update());
+
   UPS.previousTime = UPS.currentTime;
 }
 //-----------------------------------------------------------------------------------------
@@ -256,6 +259,14 @@ function spawnObstacle() {
   if (createNewObstacle) {
     gameProps.obstacles.push(new TObstacle());
     lastSpawnObstacleTime = UPS.current;
+  }
+}
+function spawnFood(){
+  const delta = UPS.current - lastSpawnFoodTime;
+  const createNewFood = delta > 4000;
+  if(createNewFood){
+    gameProps.foods.push(new TFood(cvs, imgSheet, SheetData));
+    lastSpawnFoodTime = UPS.current;
   }
 }
 
