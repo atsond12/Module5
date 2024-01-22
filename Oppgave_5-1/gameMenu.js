@@ -32,14 +32,25 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
   pos.y += 43;
   const spMedal = new TSprite(aCanvas, aSheetImage, aSheetData.medal, pos);
   
-  pos.x += 0;
-  pos.y -= 0;
+  pos.x += 165;
+  pos.y -= 12;
   const spScore = new TSpriteNumber(aCanvas, aSheetImage, aSheetData.numberSmall, pos);
 
   pos.x += 0;
-  pos.y += 50;
+  pos.y += 42;
   const spHeighScore = new TSpriteNumber(aCanvas, aSheetImage, aSheetData.numberSmall, pos);
+  
+  pos.x = 40;
+  pos.y = 40;
+  const spCurrentScore = new TSpriteNumber(aCanvas, aSheetImage, aSheetData.numberBig, pos);
+  spCurrentScore.setAlpha(50);
 
+  let score = 0;
+  let scoreGold = 0;
+  let scoreSilver = 0;
+  let scoreBronze = 0;
+
+  spCurrentScore.setValue(score);
 
   this.drawIdle = function(){
     spFlappyBird.draw();
@@ -59,11 +70,32 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
     spHeighScore.draw();
   }
 
+  this.drawGameRunning = function(){
+    spCurrentScore.draw();
+  }
+
   this.setGameOver = function(){
     spGetReady.setIndex(1);
-    spMedal.setIndex(2);
-    spScore.setValue(100);
-    spHeighScore.setValue(200); 
+    
+    spScore.setValue(score);
+    if(score > scoreGold){
+      scoreGold = score;
+      spMedal.setIndex(2);
+    }else if(score > scoreSilver){
+      scoreSilver = score;
+      spMedal.setIndex(1);
+    }else if(score > scoreBronze){
+      scoreBronze = score;
+      spMedal.setIndex(3);
+    }else{
+      spMedal.setIndex(0);
+    }
+    spHeighScore.setValue(scoreGold); 
+  }
+
+  this.updateScore = function(aValue){
+    score += aValue;
+    spCurrentScore.setValue(score);
   }
 
   function doCountDown(){

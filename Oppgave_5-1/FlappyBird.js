@@ -126,6 +126,7 @@ function TObstacle() {
   const spTop = new TSprite(cvs, imgSheet, SheetData.obstacle, pos);
   spBottom.setIndex(2);
   spTop.setIndex(3);
+  let score = 20;
 
   this.deSpawn = false;
 
@@ -146,6 +147,12 @@ function TObstacle() {
     const collideTop = spTop.areSpritesColliding(spHero);
     if (collideBottom || collideTop) {
       gameStatus = EGameStatusType.HeroIsDead;
+    }
+    if(score > 0){
+      if((left + SheetData.obstacle.width) < 100){
+        gameProps.gameMenu.updateScore(score);
+        score = 0;
+      }
     }
   };
 } // End of class TObstacle
@@ -193,6 +200,8 @@ function drawGame() {
     gameProps.gameMenu.drawCountDown();
   }else if(gameStatus === EGameStatusType.GameOver){
     gameProps.gameMenu.drawGameOver();
+  }else if(gameStatus === EGameStatusType.Running){
+    gameProps.gameMenu.drawGameRunning();
   }
 
   for(let i = 0; i < gameProps.foods.length; i++){
