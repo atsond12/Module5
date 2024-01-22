@@ -6,6 +6,7 @@ import { TSprite } from "../lib/libSprite.js";
 import { TPoint, TSinesWave } from "../lib/lib2D.js";
 import { TGameMenu } from "./gameMenu.js";
 import { TFood } from "./food.js";
+import { TSound } from "../lib/libSound.js";
 
 //-----------------------------------------------------------------------------------------
 //----------- variables and object --------------------------------------------------------
@@ -43,6 +44,14 @@ export const gameProps = {
   gameMenu: null,
   foods: [],
 };
+
+const soundProps = {
+  countDown: new TSound("./media/countDown.mp3"),
+  heroIsDead: new TSound("./media/heroIsDead.mp3"),
+  gameOver: new TSound("./media/gameOver.mp3"),
+  food: new TSound("./media/food.mp3"),
+  running: new TSound("./media/running.mp3")
+}
 
 const groundLevel = SheetData.background.height - SheetData.ground.height;
 let lastSpawnObstacleTime = 0;
@@ -93,6 +102,8 @@ function THero() {
       gameStatus = EGameStatusType.GameOver;
       pos.y = groundLevel - SheetData.hero1.height;
       gameProps.gameMenu.setGameOver();
+      playSound(soundProps.gameOver);
+      soundProps.running.stop();
     }
     
     sp.updateDestination(pos.x, pos.y);
@@ -147,6 +158,7 @@ function TObstacle() {
     const collideTop = spTop.areSpritesColliding(spHero);
     if (collideBottom || collideTop) {
       gameStatus = EGameStatusType.HeroIsDead;
+      playSound(soundProps.heroIsDead);
     }
     if(score > 0){
       if((left + SheetData.obstacle.width) < 100){
@@ -253,6 +265,8 @@ function updateGame() {
     food.update();
     if(food.eaten === true){
       eatenIndex = gameProps.foods.indexOf(food);
+      gameProps.gameMenu.updateScore(50);
+      playSound(soundProps.food);
     }
   });
 
@@ -296,11 +310,21 @@ function spawnFood(){
 export function startCountDown(){
   console.log("Start Count Down!!");
   gameStatus = EGameStatusType.CountDown;
+  gameProps.hero = new THero();
+  gameProps.obstacles.length = 0;
+  gameProps.foods.length = 0;
+  gameProps.gameMenu.resetCountDown();
+  playSound(soundProps.countDown);
   setTimeout(gameProps.gameMenu.updateCountDown, 1000);
 }
 
 export function startGame(){
   gameStatus = EGameStatusType.Running;
+  playSound(soundProps.running);
+}
+
+function playSound(aSound){
+  aSound.play();
 }
 
 //-----------------------------------------------------------------------------------------

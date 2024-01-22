@@ -39,8 +39,8 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
   pos.y += 42;
   const spHeighScore = new TSpriteNumber(aCanvas, aSheetImage, aSheetData.numberSmall, pos);
   
-  pos.x = 40;
-  pos.y = 40;
+  pos.x = 60;
+  pos.y = 10;
   const spCurrentScore = new TSpriteNumber(aCanvas, aSheetImage, aSheetData.numberBig, pos);
   spCurrentScore.setAlpha(50);
 
@@ -102,11 +102,10 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
   function doCountDown(){
     let done = false;
     countDown--;
-    spNumber.setValue(countDown);
     if(countDown <= 0){
-      countDown = 3;
       done = true;
     }
+    spNumber.setValue(countDown);
     return done;
   }
 
@@ -119,6 +118,14 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
     }
   }
 
+  this.resetCountDown = function(){
+    countDown = 3;
+    spNumber.setValue(countDown);
+    spGetReady.setIndex(0);
+    score = 0;
+    spCurrentScore.setValue(score);
+  }
+  
   function buttonClick(){
     spButton.disabled = true;
     startCountDown();
