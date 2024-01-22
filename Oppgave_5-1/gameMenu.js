@@ -6,20 +6,19 @@ import { startCountDown, gameProps, startGame} from "./FlappyBird.js"
 
 export function TGameMenu(aCanvas, aSheetImage, aSheetData){
   const pos = new TPoint(220, 90);
-  
-
   const spFlappyBird = new TSprite(aCanvas, aSheetImage, aSheetData.flappyBird, pos);
+  
   pos.x += 30;
-  pos.y += 110;
+  pos.y += 100;
   const spButton = new TSpriteButton(
     aCanvas, aSheetImage, aSheetData.btnStartGame, pos, buttonClick);
   
   pos.x -= 30;
-  pos.y -= 110;
+  pos.y -= 180;
   const spGetReady = new TSprite(aCanvas, aSheetImage, aSheetData.infoText, pos);  
 
   pos.x += 85;
-  pos.y += 110;
+  pos.y += 50;
   const spNumber = new TSpriteNumber(aCanvas, aSheetImage, aSheetData.numberBig, pos);
   let countDown = 3;
   spNumber.setValue(countDown);
@@ -68,6 +67,7 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
     spMedal.draw();
     spScore.draw();
     spHeighScore.draw();
+    spButton.draw();
   }
 
   this.drawGameRunning = function(){
@@ -90,7 +90,8 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
     }else{
       spMedal.setIndex(0);
     }
-    spHeighScore.setValue(scoreGold); 
+    spHeighScore.setValue(scoreGold);
+    spButton.disabled = false; 
   }
 
   this.updateScore = function(aValue){
