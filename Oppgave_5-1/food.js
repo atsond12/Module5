@@ -12,6 +12,7 @@ export function TFood(aCanvas, aSheetImage, aSheetData){
   const frequency = Math.ceil(Math.random() * 10) / 20;
   const wave = new TSinesWave(pos.y, frequency, amplitude);
   const speed = Math.ceil(Math.random() * 10) / 10;
+  this.eaten = false;
 
   this.draw = function(){
     sp.draw();
@@ -31,7 +32,7 @@ export function TFood(aCanvas, aSheetImage, aSheetData){
     const spHero = gameProps.hero.getSprite();
     const dist = spHero.getDistanceToSpriteCenter(sp);
     if(dist < 30){
-      console.log("Eat food!!!");
+      this.eaten = true;
     }
     
   }

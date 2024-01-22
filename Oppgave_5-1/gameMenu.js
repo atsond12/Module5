@@ -24,6 +24,10 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
   let countDown = 3;
   spNumber.setValue(countDown);
 
+  pos.x -= 90;
+  //pos.y += 110;
+  const spGameOver = new TSprite(aCanvas, aSheetImage, aSheetData.gameOver, pos);
+  const spMedal =
   this.drawIdle = function(){
     spFlappyBird.draw();
     spButton.draw();
@@ -32,6 +36,15 @@ export function TGameMenu(aCanvas, aSheetImage, aSheetData){
   this.drawCountDown = function(){
     spGetReady.draw();
     spNumber.draw();
+  }
+
+  this.drawGameOver = function(){
+    spGetReady.draw();
+    spGameOver.draw();
+  }
+
+  this.setGameOver = function(){
+    spGetReady.setIndex(1);
   }
 
   function doCountDown(){

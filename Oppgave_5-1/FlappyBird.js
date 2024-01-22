@@ -92,6 +92,7 @@ function THero() {
     if(pos.y >= groundLevel){
       gameStatus = EGameStatusType.GameOver;
       pos.y = groundLevel - SheetData.hero1.height;
+      gameProps.gameMenu.setGameOver();
     }
     
     sp.updateDestination(pos.x, pos.y);
@@ -190,6 +191,8 @@ function drawGame() {
     gameProps.gameMenu.drawIdle();
   }else if(gameStatus === EGameStatusType.CountDown){
     gameProps.gameMenu.drawCountDown();
+  }else if(gameStatus === EGameStatusType.GameOver){
+    gameProps.gameMenu.drawGameOver();
   }
 
   for(let i = 0; i < gameProps.foods.length; i++){
@@ -234,8 +237,19 @@ function updateGame() {
   if(gameStatus === EGameStatusType.HeroIsDead){
     gameProps.hero.update();
   }
-  spawnFood();  
-  gameProps.foods.forEach(food => food.update());
+  spawnFood();
+
+  let eatenIndex = -1;
+  gameProps.foods.forEach((food) => {
+    food.update();
+    if(food.eaten === true){
+      eatenIndex = gameProps.foods.indexOf(food);
+    }
+  });
+
+  if(eatenIndex >= 0){
+    gameProps.foods.splice(eatenIndex, 1);
+  }
 
   UPS.previousTime = UPS.currentTime;
 }
