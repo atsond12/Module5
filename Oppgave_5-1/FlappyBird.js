@@ -357,3 +357,9 @@ function keyPress(aEvent) {
     }
   }
 }
+
+export function setDayNight(aEvent){
+  const isDay = (aEvent.target.value === 1) 
+  console.log(isDay);
+}
+

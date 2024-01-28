@@ -35,6 +35,10 @@
       document.addEventListener("DOMContentLoaded", FlappyBird.initGame);
       const chkMuteSound = document.getElementById("chkMuteSound");
       const rbDayNight = document.getElementsByName("rbDayNight");
+      
+      rbDayNight[0].addEventListener("change", FlappyBird.setDayNight);
+      rbDayNight[1].addEventListener("change", FlappyBird.setDayNight);
+      
 
     </script>
   </body>
