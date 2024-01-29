@@ -27,7 +27,8 @@ const gameProps = {
   background: null,
   colorButtons: [],
   numberRound: null,
-  button: null
+  button: null,
+  gameOverScore: null
 };
 
 const posCenterGame = new TPoint(
@@ -36,13 +37,17 @@ const posCenterGame = new TPoint(
 );
 
 const sequence = [];
-const EGameStatusType = {Idle: 0, Running: 1};
+const EGameStatusType = {Idle: 0, Computer: 1, Player: 2, GameOver: 3};
 let gameStatus = EGameStatusType.Idle;
+let sequenceIndex = 0;
+let roundCounter = 0;
+let speed = 1;
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
 
 function TColorButton(aSpriteAnimation, aNoteName){
+  const colorButton = this;
   const spa = aSpriteAnimation;
   const sp = new TSpriteButton(cvs, imgSheet, spa, spa.pos, null, down, up );
   sp.setPointIsOverHandler(isMouseOver);
@@ -53,12 +58,32 @@ function TColorButton(aSpriteAnimation, aNoteName){
     sp.draw();
   }
   
-  this.setDown = function(){
-    down();
-    setTimeout(up, 1000);
+  this.setDown = function(){ // Denne kjøres kun av computer!
+    sp.setIndex(1);
+    if(!tone){
+      tone = createTone(aNoteName, EOctave.Octave5);
+    }
+    tone.play();
+    setTimeout(this.setUp, 1000 / speed);
+  }
+
+  this.setUp = function(){ // Denne kjøres kun av computer!
+    sp.setIndex(0);
+    tone.stop();
+    sequenceIndex++;
+    if(sequenceIndex < sequence.length){
+      setTimeout(runComputer, 500 / speed);
+    }else{
+      sequenceIndex = 0;
+      gameStatus = EGameStatusType.Player;
+    }
   }
 
   function isMouseOver(aPointX, aPointY){
+    if(gameStatus !== EGameStatusType.Player){
+      cvs.style.cursor = "no-drop";
+      return false;
+    }
     const x = aPointX - posCenterGame.x;
     const y = aPointY - posCenterGame.y;
 
@@ -74,7 +99,7 @@ function TColorButton(aSpriteAnimation, aNoteName){
     }
   }
 
-  function down(){
+  function down(){ // Denne kjøres kun av spilleren
     sp.setIndex(1);
     if(!tone){
       tone = createTone(aNoteName, EOctave.Octave5);
@@ -82,9 +107,26 @@ function TColorButton(aSpriteAnimation, aNoteName){
     tone.play();
   }
 
-  function up(){
+  function up(){ // Denne kjøres kun av spilleren
     sp.setIndex(0);
     tone.stop();
+    if(colorButton !== sequence[sequenceIndex]){
+      gameProps.button.setIndex(1);
+      gameProps.button.disabled = false;
+      gameProps.gameOverScore.setValue(roundCounter);
+      gameStatus = EGameStatusType.GameOver;
+      return;
+    }
+    sequenceIndex++;
+    if(sequenceIndex >= sequence.length){
+      sequenceIndex = 0;
+      gameStatus = EGameStatusType.Computer;
+      //Her er vi ferdig med alle sekvensene brukeren har klikket på!
+      roundCounter++;
+      speed += 0.7;
+      gameProps.numberRound.setValue(roundCounter);
+      setTimeout(spawnColorButton, 1000 / speed);
+    }
   }
 
 }// End of TColorButton
@@ -104,9 +146,9 @@ function loadGame() {
   gameProps.colorButtons.push(new TColorButton(SheetData.ButtonBlue, ENoteName.E));
   gameProps.colorButtons.push(new TColorButton(SheetData.ButtonYellow,ENoteName.F));
   gameProps.numberRound = new TSpriteNumber(cvs, imgSheet, SheetData.number, SheetData.number.pos);
-  gameProps.numberRound.setValue(0);
+  gameProps.numberRound.setValue(roundCounter);
   gameProps.button = new TSpriteButton(cvs, imgSheet, SheetData.ButtonStartEnd,SheetData.ButtonStartEnd.pos, runGame)
-
+  gameProps.gameOverScore = new TSpriteNumber(cvs, imgSheet, SheetData.number,{x: 350, y:450 });
   requestAnimationFrame(drawGame);
   console.log("Game canvas is rendering!");
 }
@@ -118,16 +160,21 @@ function drawGame() {
   gameProps.background.draw();
   gameProps.colorButtons.forEach(button => button.draw());
   gameProps.numberRound.draw();
-  if(gameStatus === EGameStatusType.Idle){
+  if((gameStatus === EGameStatusType.Idle) || (gameStatus === EGameStatusType.GameOver)){
     gameProps.button.draw();
+  }
+  if(gameStatus === EGameStatusType.GameOver){
+    gameProps.gameOverScore.draw();
   }
   requestAnimationFrame(drawGame);
 }
 
 function runGame(){
-  gameStatus = EGameStatusType.Running;
+  gameStatus = EGameStatusType.Computer;
   sequence.length = 0;
   gameProps.button.disabled = true;
+  roundCounter = 0;
+  gameProps.numberRound.setValue(roundCounter);
   spawnColorButton();
 }
 
@@ -135,11 +182,12 @@ function spawnColorButton(){
   const index = Math.floor(Math.random() * 4);
   const colorButton = gameProps.colorButtons[index];
   sequence.push(colorButton);
+  sequenceIndex = 0;
   runComputer();
 }
 
 function runComputer(){
-  sequence[0].setDown();
+  sequence[sequenceIndex].setDown();
 }
 //-----------------------------------------------------------------------------------------
 
