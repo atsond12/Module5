@@ -1,4 +1,6 @@
 "use strict";
+import { TPoint } from "../lib/lib2D.js";
+import { TSpriteButton } from "../lib/libSprite.js";
 //-----------------------------------------------------------------------------------------
 //----------- Import modules, js files  ---------------------------------------------------
 //-----------------------------------------------------------------------------------------
@@ -32,6 +34,7 @@ const Difficulty = {
 
 const gameProps = {
   gameBoard: null,
+  buttonSmiley: null
 };
 
 let gameLevel = Difficulty.Level_1;
@@ -44,9 +47,12 @@ let imgSheet = null;
 const TextColorTable = ["Blue", "Green", "Red", "Purple", "Maroon", "Turquoise", "Black", "Gray"];
 const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 5 };
 
+
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
+//    TTile
+
 
 
 //-----------------------------------------------------------------------------------------
@@ -56,6 +62,8 @@ function loadGame() {
   cvs = document.getElementById("cvs");
   cvs.addEventListener("contextmenu", (aEvent) => aEvent.preventDefault());
   ctx = cvs.getContext("2d");
+  const pos = new TPoint(100, 20);
+  gameProps.buttonSmiley = new TSpriteButton(cvs, imgSheet, SheetData.ButtonSmiley, pos, newGame);
   newGame();
   requestAnimationFrame(drawGame);
   console.log("Game canvas is rendering!");
@@ -65,6 +73,12 @@ function newGame() {
   cvs.width = gameLevel.Tiles.Col * SheetData.ButtonTile.width + SheetData.Board.LeftMiddle.width + SheetData.Board.RightMiddle.width;
   cvs.height = gameLevel.Tiles.Row * SheetData.ButtonTile.height + SheetData.Board.TopMiddle.height + SheetData.Board.BottomMiddle.height;
   gameProps.gameBoard = new TGameBoard(cvs, imgSheet, SheetData.Board);
+  // Set new destination for Smiley Button!!!
+  // gameProps.buttonSmiley.updateDestination(x, y)
+  const x = (cvs.width/2) - (SheetData.ButtonSmiley.width/2);
+  const y = 25;
+  gameProps.buttonSmiley.updateDestination(x, y);
+  console.log("Starting new Game!!!!");
 }
 
 
@@ -73,6 +87,7 @@ function drawGame() {
 
   // Draw your game props here
   gameProps.gameBoard.draw();
+  gameProps.buttonSmiley.draw();
 
   requestAnimationFrame(drawGame);
 }
