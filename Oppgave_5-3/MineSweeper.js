@@ -34,7 +34,8 @@ const Difficulty = {
 
 const gameProps = {
   gameBoard: null,
-  buttonSmiley: null
+  buttonSmiley: null,
+  tiles: []
 };
 
 let gameLevel = Difficulty.Level_1;
@@ -53,7 +54,18 @@ const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 
 //-----------------------------------------------------------------------------------------
 //    TTile
 
+function TTile(aRow, aCol){
+  const row = aRow;
+  const col = aCol;
+  const pos = new TPoint(
+    20 + (col * SheetData.ButtonTile.width),
+    132 + (row * SheetData.ButtonTile.height));
+  const sp = new TSpriteButton(cvs, imgSheet, SheetData.ButtonTile, pos);
 
+  this.draw = function(){
+    sp.draw();
+  }
+}
 
 //-----------------------------------------------------------------------------------------
 //----------- functions -------------------------------------------------------------------
@@ -78,6 +90,15 @@ function newGame() {
   const x = (cvs.width/2) - (SheetData.ButtonSmiley.width/2);
   const y = 25;
   gameProps.buttonSmiley.updateDestination(x, y);
+  for(let row = 0; row < 5; row++){
+    const cols = [];
+    for(let col = 0; col < 6; col++){
+      const tile = new TTile(row, col);
+      cols.push(tile);
+    }
+    gameProps.tiles.push(cols);
+  }
+
   console.log("Starting new Game!!!!");
 }
 
@@ -88,6 +109,14 @@ function drawGame() {
   // Draw your game props here
   gameProps.gameBoard.draw();
   gameProps.buttonSmiley.draw();
+  
+  for(let row = 0; row < gameProps.tiles.length; row++){
+   const columns =  gameProps.tiles[row];
+   for(let col = 0; col < columns.length; col++){
+    const tile = columns[col];
+    tile.draw();
+   }
+  }
 
   requestAnimationFrame(drawGame);
 }
