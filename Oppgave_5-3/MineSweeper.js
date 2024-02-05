@@ -60,11 +60,43 @@ function TTile(aRow, aCol){
   const pos = new TPoint(
     20 + (col * SheetData.ButtonTile.width),
     132 + (row * SheetData.ButtonTile.height));
-  const sp = new TSpriteButton(cvs, imgSheet, SheetData.ButtonTile, pos);
-
+  const sp = new TSpriteButton(cvs, imgSheet, SheetData.ButtonTile, pos, null, down, up);
+  let state = ETileStateType.Up;
+  let isMine = false;
+  
   this.draw = function(){
+    sp.setIndex(state);
     sp.draw();
   }
+
+  this.isMine = function(){
+    return isMine;
+  }
+
+  this.setIsMine = function(){
+    isMine = true;
+    state = ETileStateType.ActiveMine;
+  }
+
+  function down(){
+    state = ETileStateType.Down;
+  }
+
+  function up(aEvent){
+    state = ETileStateType.Up;
+    if(aEvent.target.cancel === false){
+      open();
+    }
+  }
+
+  function open(){
+    if(isMine){
+      state = ETileStateType.ActiveMine;
+    }else{
+      state = ETileStateType.Open;
+    }
+  }
+
 }
 
 //-----------------------------------------------------------------------------------------
@@ -90,6 +122,7 @@ function newGame() {
   const x = (cvs.width/2) - (SheetData.ButtonSmiley.width/2);
   const y = 25;
   gameProps.buttonSmiley.updateDestination(x, y);
+  
   for(let row = 0; row < gameLevel.Tiles.Row; row++){
     const cols = [];
     for(let col = 0; col < gameLevel.Tiles.Col; col++){
@@ -98,9 +131,22 @@ function newGame() {
     }
     gameProps.tiles.push(cols);
   }
+  //Generate mines
+  let mineCount = 0;
+  do{
+    const row = Math.floor(Math.random() * gameLevel.Tiles.Row);
+    const col = Math.floor(Math.random() * gameLevel.Tiles.Col);
+    const tile = gameProps.tiles[row][col];
+    if(tile.isMine() == false){
+      tile.setIsMine();
+      mineCount++;
+    }
 
+  }while(mineCount < gameLevel.Mines);
   console.log("Starting new Game!!!!");
 }
+
+
 
 
 function drawGame() {

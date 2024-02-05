@@ -76,3 +76,40 @@ export function TGameBoard(aCanvas, aImageSheet, aSpriteAnimation) {
       }
     };
   }// end of class TGameBoard
+
+
+  function TNeighbour(aRow, aCol, aGameLevel){
+    const tileRow = aRow;
+    const tileCol = aCol;
+    const from = {
+      row: aRow - 1, col: aCol - 1
+    }
+    const to= {
+      row: aRow + 1, col: aCol + 1
+    }
+
+    if(from.row < 0){
+      from.row = 0;
+    }
+    if(from.col < 0){
+      from.col = 0;
+    }
+    if(to.row >= aGameLevel.Tiles.Row){
+      to.row = aGameLevel.Tiles.Row - 1;
+    }
+    if(to.col >= aGameLevel.Tile.Col){
+      to.col = aGameLevel.Tiles.Col - 1;
+    }
+
+    this.visitAll = function(aTable, aVisitCallBack){
+      for(let row = from.row; row < to.row; row++){
+        for(let col = from.col; col < to.col; col++){
+          if((tileRow !== row) && (tileCol !== col)){
+            const tile = aTable[row][col];
+            aVisitCallBack(tile);
+          }
+        }
+      }
+    }
+
+  }
