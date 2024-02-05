@@ -78,7 +78,7 @@ export function TGameBoard(aCanvas, aImageSheet, aSpriteAnimation) {
   }// end of class TGameBoard
 
 
-  function TNeighbour(aRow, aCol, aGameLevel){
+  export function TNeighbour(aRow, aCol, aGameLevel){
     const tileRow = aRow;
     const tileCol = aCol;
     const from = {
@@ -97,19 +97,18 @@ export function TGameBoard(aCanvas, aImageSheet, aSpriteAnimation) {
     if(to.row >= aGameLevel.Tiles.Row){
       to.row = aGameLevel.Tiles.Row - 1;
     }
-    if(to.col >= aGameLevel.Tile.Col){
+    if(to.col >= aGameLevel.Tiles.Col){
       to.col = aGameLevel.Tiles.Col - 1;
     }
 
     this.visitAll = function(aTable, aVisitCallBack){
-      for(let row = from.row; row < to.row; row++){
-        for(let col = from.col; col < to.col; col++){
-          if((tileRow !== row) && (tileCol !== col)){
+      for(let row = from.row; row <= to.row; row++){
+        for(let col = from.col; col <= to.col; col++){
+          if(((tileRow === row) && (tileCol === col)) === false){
             const tile = aTable[row][col];
             aVisitCallBack(tile);
           }
         }
       }
     }
-
   }

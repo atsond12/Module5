@@ -1,11 +1,10 @@
 "use strict";
-import { TPoint } from "../lib/lib2D.js";
-import { TSpriteButton } from "../lib/libSprite.js";
 //-----------------------------------------------------------------------------------------
 //----------- Import modules, js files  ---------------------------------------------------
 //-----------------------------------------------------------------------------------------
-
-import { TGameBoard } from "./gameBoard.js";
+import { TPoint } from "../lib/lib2D.js";
+import { TSpriteButton } from "../lib/libSprite.js";
+import { TGameBoard, TNeighbour} from "./gameBoard.js";
 
 //-----------------------------------------------------------------------------------------
 //----------- variables and object --------------------------------------------------------
@@ -55,6 +54,7 @@ const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 
 //    TTile
 
 function TTile(aRow, aCol){
+  const tile = this;
   const row = aRow;
   const col = aCol;
   const pos = new TPoint(
@@ -63,10 +63,19 @@ function TTile(aRow, aCol){
   const sp = new TSpriteButton(cvs, imgSheet, SheetData.ButtonTile, pos, null, down, up);
   let state = ETileStateType.Up;
   let isMine = false;
+  const neighbour = new TNeighbour(row, col, gameLevel);
+  let mineInfo = 0;
   
   this.draw = function(){
     sp.setIndex(state);
     sp.draw();
+    if(state === ETileStateType.Open){
+      if(mineInfo > 0){
+        ctx.font = "48px Courier New";
+        ctx.fillStyle = TextColorTable[mineInfo - 1];
+        ctx.fillText(mineInfo.toString(), pos.x + 10, pos.y + 40);
+      }
+    }
   }
 
   this.isMine = function(){
@@ -75,7 +84,16 @@ function TTile(aRow, aCol){
 
   this.setIsMine = function(){
     isMine = true;
-    state = ETileStateType.ActiveMine;
+    //state = ETileStateType.ActiveMine;
+    neighbour.visitAll(gameProps.tiles, visitNeighbour);
+  }
+
+  function visitNeighbour(aNeighbour){
+    aNeighbour.updateMineInfo();
+  }
+
+  this.updateMineInfo = function(){
+    mineInfo++;
   }
 
   function down(){
@@ -85,16 +103,27 @@ function TTile(aRow, aCol){
   function up(aEvent){
     state = ETileStateType.Up;
     if(aEvent.target.cancel === false){
-      open();
+      tile.open();
     }
   }
 
-  function open(){
+  function openNeighbour (aNeighbour){
+      aNeighbour.open();
+  }
+
+  this.open = function(){
+    if(mineInfo === 0){
+      if(state === ETileStateType.Up){
+        state = ETileStateType.Open;
+        neighbour.visitAll(gameProps.tiles, openNeighbour);
+      }
+    }
     if(isMine){
       state = ETileStateType.ActiveMine;
     }else{
       state = ETileStateType.Open;
     }
+
   }
 
 }
