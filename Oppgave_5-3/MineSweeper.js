@@ -90,9 +90,9 @@ function newGame() {
   const x = (cvs.width/2) - (SheetData.ButtonSmiley.width/2);
   const y = 25;
   gameProps.buttonSmiley.updateDestination(x, y);
-  for(let row = 0; row < 5; row++){
+  for(let row = 0; row < gameLevel.Tiles.Row; row++){
     const cols = [];
-    for(let col = 0; col < 6; col++){
+    for(let col = 0; col < gameLevel.Tiles.Col; col++){
       const tile = new TTile(row, col);
       cols.push(tile);
     }
