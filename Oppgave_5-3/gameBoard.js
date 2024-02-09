@@ -106,6 +106,7 @@ export function TGameBoard(aCanvas, aImageSheet, aSpriteAnimation) {
         for(let col = from.col; col <= to.col; col++){
           if(((tileRow === row) && (tileCol === col)) === false){
             const tile = aTable[row][col];
+            if(!tile)debugger;
             aVisitCallBack(tile);
           }
         }

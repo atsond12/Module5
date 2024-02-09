@@ -3,8 +3,8 @@
 //----------- Import modules, js files  ---------------------------------------------------
 //-----------------------------------------------------------------------------------------
 import { TPoint } from "../lib/lib2D.js";
-import { TSpriteButton } from "../lib/libSprite.js";
-import { TGameBoard, TNeighbour} from "./gameBoard.js";
+import { TSpriteButton, TSpriteNumber } from "../lib/libSprite.js";
+import { TGameBoard, TNeighbour } from "./gameBoard.js";
 
 //-----------------------------------------------------------------------------------------
 //----------- variables and object --------------------------------------------------------
@@ -34,7 +34,9 @@ const Difficulty = {
 const gameProps = {
   gameBoard: null,
   buttonSmiley: null,
-  tiles: []
+  tiles: [],
+  numberOfMines: null,
+  numberOfSeconds: null,
 };
 
 let gameLevel = Difficulty.Level_1;
@@ -47,86 +49,92 @@ let imgSheet = null;
 const TextColorTable = ["Blue", "Green", "Red", "Purple", "Maroon", "Turquoise", "Black", "Gray"];
 const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 5 };
 
+let numberOfSeconds = 0;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------
-//    TTile
 
-function TTile(aRow, aCol){
+//--- TTile -------------------------------------------------------------------------------
+function TTile(aRow, aCol) {
   const tile = this;
   const row = aRow;
   const col = aCol;
-  const pos = new TPoint(
-    20 + (col * SheetData.ButtonTile.width),
-    132 + (row * SheetData.ButtonTile.height));
+  const pos = new TPoint(20 + col * SheetData.ButtonTile.width, 132 + row * SheetData.ButtonTile.height);
   const sp = new TSpriteButton(cvs, imgSheet, SheetData.ButtonTile, pos, null, down, up);
   let state = ETileStateType.Up;
   let isMine = false;
   const neighbour = new TNeighbour(row, col, gameLevel);
   let mineInfo = 0;
-  
-  this.draw = function(){
+
+  this.draw = function () {
     sp.setIndex(state);
     sp.draw();
-    if(state === ETileStateType.Open){
-      if(mineInfo > 0){
+    if (state === ETileStateType.Open) {
+      if (mineInfo > 0) {
         ctx.font = "48px Courier New";
         ctx.fillStyle = TextColorTable[mineInfo - 1];
         ctx.fillText(mineInfo.toString(), pos.x + 10, pos.y + 40);
       }
     }
-  }
+  };
 
-  this.isMine = function(){
+  this.isMine = function () {
     return isMine;
-  }
+  };
 
-  this.setIsMine = function(){
+  this.setIsMine = function () {
     isMine = true;
     //state = ETileStateType.ActiveMine;
     neighbour.visitAll(gameProps.tiles, visitNeighbour);
-  }
+  };
 
-  function visitNeighbour(aNeighbour){
+  function visitNeighbour(aNeighbour) {
     aNeighbour.updateMineInfo();
   }
 
-  this.updateMineInfo = function(){
+  this.updateMineInfo = function () {
     mineInfo++;
-  }
+  };
 
-  function down(){
-    state = ETileStateType.Down;
-  }
-
-  function up(aEvent){
-    state = ETileStateType.Up;
-    if(aEvent.target.cancel === false){
-      tile.open();
+  function down(aEvent) {
+    if (aEvent.buttons === 2) {
+      //Oppdatere gameProps.numberOfMines.setValue(???);
+      state = ETileStateType.Flag;
+    } else if(state !== ETileStateType.Flag){
+      state = ETileStateType.Down;
     }
   }
 
-  function openNeighbour (aNeighbour){
-      aNeighbour.open();
+  function up(aEvent) {
+    if (state === ETileStateType.Down) {
+      state = ETileStateType.Up;
+      if (aEvent.target.cancel === false) {
+        tile.open();
+      }
+    }
   }
 
-  this.open = function(){
-    if(mineInfo === 0){
-      if(state === ETileStateType.Up){
+  function openNeighbour(aNeighbour) {
+    aNeighbour.open();
+  }
+
+  this.open = function () {
+    if (mineInfo === 0) {
+      if (state === ETileStateType.Up) {
         state = ETileStateType.Open;
         neighbour.visitAll(gameProps.tiles, openNeighbour);
       }
     }
-    if(isMine){
+    if (isMine) {
       state = ETileStateType.ActiveMine;
-    }else{
+    } else {
       state = ETileStateType.Open;
     }
 
-  }
-
-}
+    sp.disabled = state !== ETileStateType.Up;
+  };
+} // End class Tile
 
 //-----------------------------------------------------------------------------------------
 //----------- functions -------------------------------------------------------------------
@@ -148,13 +156,14 @@ function newGame() {
   gameProps.gameBoard = new TGameBoard(cvs, imgSheet, SheetData.Board);
   // Set new destination for Smiley Button!!!
   // gameProps.buttonSmiley.updateDestination(x, y)
-  const x = (cvs.width/2) - (SheetData.ButtonSmiley.width/2);
+  const x = cvs.width / 2 - SheetData.ButtonSmiley.width / 2;
   const y = 25;
   gameProps.buttonSmiley.updateDestination(x, y);
-  
-  for(let row = 0; row < gameLevel.Tiles.Row; row++){
+
+  gameProps.tiles.length = 0;
+  for (let row = 0; row < gameLevel.Tiles.Row; row++) {
     const cols = [];
-    for(let col = 0; col < gameLevel.Tiles.Col; col++){
+    for (let col = 0; col < gameLevel.Tiles.Col; col++) {
       const tile = new TTile(row, col);
       cols.push(tile);
     }
@@ -162,21 +171,34 @@ function newGame() {
   }
   //Generate mines
   let mineCount = 0;
-  do{
+  do {
     const row = Math.floor(Math.random() * gameLevel.Tiles.Row);
     const col = Math.floor(Math.random() * gameLevel.Tiles.Col);
     const tile = gameProps.tiles[row][col];
-    if(tile.isMine() == false){
+    if (!tile) debugger;
+    if (tile.isMine() == false) {
       tile.setIsMine();
       mineCount++;
     }
+  } while (mineCount < gameLevel.Mines);
 
-  }while(mineCount < gameLevel.Mines);
+  /* Opprett to forekomster av TSpriteNumber, og legg dem inn i variablene som er laget i gameProps */
+  let pos = new TPoint(110, 22);
+  gameProps.numberOfMines = new TSpriteNumber(cvs, imgSheet, SheetData.Numbers, pos);
+  gameProps.numberOfMines.setValue(gameLevel.Mines);
+  pos.x = cvs.width - 85;
+  gameProps.numberOfSeconds = new TSpriteNumber(cvs, imgSheet, SheetData.Numbers, pos);
+  gameProps.numberOfSeconds.setValue(0);
+
+  setInterval(updateGame, 1000);
+
   console.log("Starting new Game!!!!");
 }
 
-
-
+function updateGame() {
+  numberOfSeconds++;
+  gameProps.numberOfSeconds.setValue(numberOfSeconds);
+}
 
 function drawGame() {
   ctx.clearRect(0, 0, cvs.width, cvs.height);
@@ -184,14 +206,16 @@ function drawGame() {
   // Draw your game props here
   gameProps.gameBoard.draw();
   gameProps.buttonSmiley.draw();
-  
-  for(let row = 0; row < gameProps.tiles.length; row++){
-   const columns =  gameProps.tiles[row];
-   for(let col = 0; col < columns.length; col++){
-    const tile = columns[col];
-    tile.draw();
-   }
+
+  for (let row = 0; row < gameProps.tiles.length; row++) {
+    const columns = gameProps.tiles[row];
+    for (let col = 0; col < columns.length; col++) {
+      const tile = columns[col];
+      tile.draw();
+    }
   }
+  gameProps.numberOfMines.draw();
+  gameProps.numberOfSeconds.draw();
 
   requestAnimationFrame(drawGame);
 }
