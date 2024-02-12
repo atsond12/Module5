@@ -26,9 +26,9 @@ export const SheetData = {
 };
 
 const Difficulty = {
-  Level_1: { Tiles: { Row: 10, Col: 10 }, Mines: 3, caption: "Level 1" },
+  Level_1: { Tiles: { Row: 10, Col: 10 }, Mines: 10, caption: "Level 1" },
   Level_2: { Tiles: { Row: 15, Col: 15 }, Mines: 50, caption: "Level 2" },
-  Level_3: { Tiles: { Row: 20, Col: 30 }, Mines: 100, caption: "Level 3" },
+  Level_3: { Tiles: { Row: 20, Col: 30 }, Mines: 5, caption: "Level 3" },
 };
 
 const gameProps = {
@@ -237,7 +237,7 @@ function newGame() {
   gameProps.numberOfSeconds.setValue(0);
 
   numberOfMines = gameLevel.Mines;
-  numberOfSeconds = 0;
+  numberOfSeconds = 995;
   if(!intervalID){
     intervalID = setInterval(updateGame, 1000);
   }
@@ -247,8 +247,11 @@ function newGame() {
 }
 
 function updateGame() {
-  numberOfSeconds++;
-  gameProps.numberOfSeconds.setValue(numberOfSeconds);
+  if(numberOfSeconds < 999){
+    numberOfSeconds++;
+    gameProps.numberOfSeconds.setValue(numberOfSeconds);
+  }
+
   if(remainingTiles === gameLevel.Mines){
     console.log("Gratulerer!!!")
     setGameOver(true);
