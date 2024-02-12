@@ -50,6 +50,7 @@ const TextColorTable = ["Blue", "Green", "Red", "Purple", "Maroon", "Turquoise",
 const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 5 };
 
 let numberOfSeconds = 0;
+let numberOfMines = 0;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
@@ -99,10 +100,22 @@ function TTile(aRow, aCol) {
 
   function down(aEvent) {
     if (aEvent.buttons === 2) {
-      //Oppdatere gameProps.numberOfMines.setValue(???);
-      state = ETileStateType.Flag;
+      if(state === ETileStateType.Flag){
+        if(numberOfMines < gameLevel.Mines){
+          numberOfMines++;
+          gameProps.numberOfMines.setValue(numberOfMines);
+          state = ETileStateType.Up;
+        }
+      }else{
+        if(numberOfMines > 0){
+          numberOfMines--;
+          gameProps.numberOfMines.setValue(numberOfMines);
+          state = ETileStateType.Flag;
+        }
+      }
     } else if(state !== ETileStateType.Flag){
       state = ETileStateType.Down;
+      gameProps.buttonSmiley.setIndex(1);
     }
   }
 
@@ -111,6 +124,9 @@ function TTile(aRow, aCol) {
       state = ETileStateType.Up;
       if (aEvent.target.cancel === false) {
         tile.open();
+        if(state === ETileStateType.Open){
+          gameProps.buttonSmiley.setIndex(0);
+        }
       }
     }
   }
@@ -128,12 +144,18 @@ function TTile(aRow, aCol) {
     }
     if (isMine) {
       state = ETileStateType.ActiveMine;
+      setGameOver();
     } else {
       state = ETileStateType.Open;
     }
 
     sp.disabled = state !== ETileStateType.Up;
   };
+
+  this.setDisabled = function(){
+    sp.disabled = true;
+  }
+
 } // End class Tile
 
 //-----------------------------------------------------------------------------------------
@@ -190,6 +212,7 @@ function newGame() {
   gameProps.numberOfSeconds = new TSpriteNumber(cvs, imgSheet, SheetData.Numbers, pos);
   gameProps.numberOfSeconds.setValue(0);
 
+  numberOfMines = gameLevel.Mines;
   setInterval(updateGame, 1000);
 
   console.log("Starting new Game!!!!");
@@ -219,6 +242,20 @@ function drawGame() {
 
   requestAnimationFrame(drawGame);
 }
+
+function setGameOver(){
+  gameProps.buttonSmiley.setIndex(2);
+  //Løp igjennom alle tiles med to for-løkker, og sett disabled = true;
+  for(let row = 0; row < gameProps.tiles.length; row++){
+    const rows = gameProps.tiles[row];
+    for(let col = 0; col < rows.length; col++){
+      const tile = rows[col];
+      tile.setDisabled();
+      // TODO: Sjekk om tile er en mine, hvs den er det så åpne den opp!!!, god helg!!!
+    }
+  }
+}
+
 //-----------------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------
