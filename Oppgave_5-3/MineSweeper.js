@@ -26,7 +26,7 @@ export const SheetData = {
 };
 
 const Difficulty = {
-  Level_1: { Tiles: { Row: 10, Col: 10 }, Mines: 10, caption: "Level 1" },
+  Level_1: { Tiles: { Row: 10, Col: 10 }, Mines: 3, caption: "Level 1" },
   Level_2: { Tiles: { Row: 15, Col: 15 }, Mines: 50, caption: "Level 2" },
   Level_3: { Tiles: { Row: 20, Col: 30 }, Mines: 100, caption: "Level 3" },
 };
@@ -52,6 +52,7 @@ const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 
 let numberOfSeconds = 0;
 let numberOfMines = 0;
 let intervalID = 0;
+let remainingTiles = 0;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
@@ -101,20 +102,20 @@ function TTile(aRow, aCol) {
 
   function down(aEvent) {
     if (aEvent.buttons === 2) {
-      if(state === ETileStateType.Flag){
-        if(numberOfMines < gameLevel.Mines){
+      if (state === ETileStateType.Flag) {
+        if (numberOfMines < gameLevel.Mines) {
           numberOfMines++;
           gameProps.numberOfMines.setValue(numberOfMines);
           state = ETileStateType.Up;
         }
-      }else{
-        if(numberOfMines > 0){
+      } else {
+        if (numberOfMines > 0) {
           numberOfMines--;
           gameProps.numberOfMines.setValue(numberOfMines);
           state = ETileStateType.Flag;
         }
       }
-    } else if(state !== ETileStateType.Flag){
+    } else if (state !== ETileStateType.Flag) {
       state = ETileStateType.Down;
       gameProps.buttonSmiley.setIndex(1);
     }
@@ -125,7 +126,7 @@ function TTile(aRow, aCol) {
       state = ETileStateType.Up;
       if (aEvent.target.cancel === false) {
         tile.open();
-        if(state === ETileStateType.Open){
+        if (state === ETileStateType.Open) {
           gameProps.buttonSmiley.setIndex(0);
         }
       }
@@ -137,32 +138,40 @@ function TTile(aRow, aCol) {
   }
 
   this.open = function () {
-    if ((mineInfo === 0) && (!isMine)) {
+    if (mineInfo === 0 && !isMine) {
       if (state === ETileStateType.Up) {
         state = ETileStateType.Open;
+        remainingTiles--;
+        console.log("remainingTiles = ", remainingTiles);
         neighbour.visitAll(gameProps.tiles, openNeighbour);
       }
     }
     if (isMine) {
       state = ETileStateType.ActiveMine;
-      setGameOver();
-    } else {
+      setGameOver(false);
+    } else if (state !== ETileStateType.Open) {
+      remainingTiles--;
+      console.log("remainingTiles = ", remainingTiles);
       state = ETileStateType.Open;
     }
 
     sp.disabled = state !== ETileStateType.Up;
   };
 
-  this.setDisabled = function(){
+  this.setDisabled = function () {
     sp.disabled = true;
-  }
+  };
 
-  this.openIfMine = function(){
-    if(isMine && (state !== ETileStateType.ActiveMine)){
-      state = ETileStateType.Mine;
+  this.openIfMine = function (aHasWon) {
+    if (isMine && state !== ETileStateType.ActiveMine) {
+      if(aHasWon){
+        state = ETileStateType.Flag;
+      }else{
+        state = ETileStateType.Mine;
+      }
+      
     }
-  }
-
+  };
 } // End class Tile
 
 //-----------------------------------------------------------------------------------------
@@ -222,6 +231,7 @@ function newGame() {
 
   numberOfMines = gameLevel.Mines;
   intervalID = setInterval(updateGame, 1000);
+  remainingTiles = gameLevel.Tiles.Row * gameLevel.Tiles.Col;
 
   console.log("Starting new Game!!!!");
 }
@@ -229,6 +239,11 @@ function newGame() {
 function updateGame() {
   numberOfSeconds++;
   gameProps.numberOfSeconds.setValue(numberOfSeconds);
+  if(remainingTiles === gameLevel.Mines){
+    console.log("Gratulerer!!!")
+    setGameOver(true);
+  }
+
 }
 
 function drawGame() {
@@ -251,15 +266,20 @@ function drawGame() {
   requestAnimationFrame(drawGame);
 }
 
-function setGameOver(){
-  gameProps.buttonSmiley.setIndex(2);
+function setGameOver(aHasWon) {
+  if(aHasWon){
+    gameProps.buttonSmiley.setIndex(3);
+  }else{
+    gameProps.buttonSmiley.setIndex(2);
+  }
+  
   //Løp igjennom alle tiles med to for-løkker, og sett disabled = true;
-  for(let row = 0; row < gameProps.tiles.length; row++){
+  for (let row = 0; row < gameProps.tiles.length; row++) {
     const rows = gameProps.tiles[row];
-    for(let col = 0; col < rows.length; col++){
+    for (let col = 0; col < rows.length; col++) {
       const tile = rows[col];
       tile.setDisabled();
-      tile.openIfMine();
+      tile.openIfMine(aHasWon);
     }
   }
   //TODO: Stop interval
