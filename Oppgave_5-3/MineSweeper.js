@@ -3,7 +3,7 @@
 //----------- Import modules, js files  ---------------------------------------------------
 //-----------------------------------------------------------------------------------------
 import { TPoint } from "../lib/lib2D.js";
-import { TSpriteButton, TSpriteNumber } from "../lib/libSprite.js";
+import { TSpriteButton, TSpriteNumber, clearSpriteEvents } from "../lib/libSprite.js";
 import { TGameBoard, TNeighbour } from "./gameBoard.js";
 
 //-----------------------------------------------------------------------------------------
@@ -172,6 +172,10 @@ function TTile(aRow, aCol) {
       
     }
   };
+
+  this.getSprite = function(){
+    return sp.getSprite();
+  }
 } // End class Tile
 
 //-----------------------------------------------------------------------------------------
@@ -198,7 +202,10 @@ function newGame() {
   const x = cvs.width / 2 - SheetData.ButtonSmiley.width / 2;
   const y = 25;
   gameProps.buttonSmiley.updateDestination(x, y);
-
+  gameProps.buttonSmiley.setIndex(0);
+  
+  //Fjerne alle tiles from event lytter!
+  clearSpriteEvents(gameProps.tiles);
   gameProps.tiles.length = 0;
   for (let row = 0; row < gameLevel.Tiles.Row; row++) {
     const cols = [];
@@ -230,7 +237,10 @@ function newGame() {
   gameProps.numberOfSeconds.setValue(0);
 
   numberOfMines = gameLevel.Mines;
-  intervalID = setInterval(updateGame, 1000);
+  numberOfSeconds = 0;
+  if(!intervalID){
+    intervalID = setInterval(updateGame, 1000);
+  }
   remainingTiles = gameLevel.Tiles.Row * gameLevel.Tiles.Col;
 
   console.log("Starting new Game!!!!");
@@ -282,8 +292,8 @@ function setGameOver(aHasWon) {
       tile.openIfMine(aHasWon);
     }
   }
-  //TODO: Stop interval
   clearInterval(intervalID);
+  intervalID = 0;
 }
 
 //-----------------------------------------------------------------------------------------
