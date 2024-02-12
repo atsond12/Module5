@@ -51,6 +51,7 @@ const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 
 
 let numberOfSeconds = 0;
 let numberOfMines = 0;
+let intervalID = 0;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
@@ -136,7 +137,7 @@ function TTile(aRow, aCol) {
   }
 
   this.open = function () {
-    if (mineInfo === 0) {
+    if ((mineInfo === 0) && (!isMine)) {
       if (state === ETileStateType.Up) {
         state = ETileStateType.Open;
         neighbour.visitAll(gameProps.tiles, openNeighbour);
@@ -156,6 +157,12 @@ function TTile(aRow, aCol) {
     sp.disabled = true;
   }
 
+  this.openIfMine = function(){
+    if(isMine && (state !== ETileStateType.ActiveMine)){
+      state = ETileStateType.Mine;
+    }
+  }
+
 } // End class Tile
 
 //-----------------------------------------------------------------------------------------
@@ -171,6 +178,7 @@ function loadGame() {
   requestAnimationFrame(drawGame);
   console.log("Game canvas is rendering!");
 }
+
 //-----------------------------------------------------------------------------------------
 function newGame() {
   cvs.width = gameLevel.Tiles.Col * SheetData.ButtonTile.width + SheetData.Board.LeftMiddle.width + SheetData.Board.RightMiddle.width;
@@ -213,7 +221,7 @@ function newGame() {
   gameProps.numberOfSeconds.setValue(0);
 
   numberOfMines = gameLevel.Mines;
-  setInterval(updateGame, 1000);
+  intervalID = setInterval(updateGame, 1000);
 
   console.log("Starting new Game!!!!");
 }
@@ -251,9 +259,11 @@ function setGameOver(){
     for(let col = 0; col < rows.length; col++){
       const tile = rows[col];
       tile.setDisabled();
-      // TODO: Sjekk om tile er en mine, hvs den er det så åpne den opp!!!, god helg!!!
+      tile.openIfMine();
     }
   }
+  //TODO: Stop interval
+  clearInterval(intervalID);
 }
 
 //-----------------------------------------------------------------------------------------
