@@ -1,6 +1,10 @@
 "use strict";
 import { TPoint } from "../lib/lib2D.js";
-import { initMenu, createMenu, drawMenu, EContainerType, EActionType, EShapeType, menuAddPaintShape, menuMovePaintShapeDown, menuMovePaintShapeUp, menuRemovePaintShape } from "./menu.js";
+import * as Menu from "./menu.js";
+
+const EActionType = Menu.EActionType;
+const EShapeType = Menu.EShapeType;
+const EContainerType = Menu.EContainerType;
 
 let cvs = null;
 let ctx = null;
@@ -159,7 +163,7 @@ function TShape() {
 
 function newDrawing() {
   console.log("New Drawing!");
-  drawMenu();
+  Menu.draw();
   shapes.length = 0;
   newShape = null;
   updateDrawing();
@@ -178,7 +182,7 @@ function updateDrawing() {
 }
 
 function loadPaintApp() {
-  createMenu(cmbClick);
+  Menu.create(cmbClick);
   newDrawing();
   //requestAnimationFrame(updateDrawing);
 }
@@ -194,16 +198,16 @@ function cmbClick(aContainerType, aValue) {
           if (newShape) {
             newShape = null;
           } else {
-            menuRemovePaintShape(shapes);
+            Menu.removeShape(shapes);
           }
           updateDrawing();
           break;
         case EActionType.MoveDown:
-          menuMovePaintShapeDown(shapes);
+          Menu.moveShapeDown(shapes);
           updateDrawing();
           break;
         case EActionType.MoveUp:   
-          menuMovePaintShapeUp(shapes);
+        Menu.moveShapeUp(shapes);
           updateDrawing();
           break;
       }
@@ -254,7 +258,7 @@ function cvsPaintMouseDown(aEvent) {
       } else {
         newShape.addPoint(true);
         shapes.push(newShape);
-        menuAddPaintShape("Shape " +  shapes.length);
+        Menu.addShape("Shape " +  shapes.length);
         newShape = null;
       }
     }
@@ -263,7 +267,7 @@ function cvsPaintMouseDown(aEvent) {
       if (newShapeType === EShapeType.Polygon) {
         newShape.close();
         shapes.push(newShape);
-        menuAddPaintShape("Shape " +  shapes.length);
+        Menu.addShape("Shape " +  shapes.length);
         newShape = null;
         updateDrawing();
       }
@@ -277,7 +281,7 @@ function keyPress(e) {
       if (newShapeType === EShapeType.Polygon) {
         newShape.close();
         shapes.push(newShape);
-        menuAddPaintShape("Shape " +  shapes.length);
+        Menu.addShape("Shape " +  shapes.length);
         newShape = null;
         updateDrawing();
       }
@@ -298,5 +302,5 @@ export function init(aEvent) {
 
   divPaintObject = document.getElementById("divPaintObject");
 
-  initMenu(loadPaintApp);
+  Menu.init(loadPaintApp);
 }
