@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="no" style="display: table; margin: auto;">
+<head>
+    <meta charset="UTF-8" content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Paint</title>
+    <style>
+        body {
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          display: table-cell;
+          vertical-align: middle;
+          text-align: center;
+        }
+        h1 {
+          font-size: xx-large;
+          margin-bottom: 0px;
+          margin-top: 0px;
+        }
+    </style>
+    <link rel="stylesheet" href="paint.css">
+</head>
+<body>
+<h2><label for="cvsMenu">Paint</label></h2>
+<table>
+    <tr>
+        <td>
+            <canvas id="cvsMenu" width="775" height="115"
+                    style="background-color: floralwhite; border: thin  gray solid"></canvas>
+        </td>
+        <td>
+            <div id="paintObjectList">
+                <div id="divPaintObject" class="paintObject">Shape-1</div>
+            </div>
+        </td>
+    </tr>
+</table>
+<br/>
+<canvas id="cvsPaint" width="1000" height="700" style="background-color: ghostwhite; border: thin  gray solid"></canvas>
+<h4>Press F12 to debug (Chrome and Firefox)</h4>
+
+<script type="module">
+    "use strict";
+    import * as Paint from "./paint.js";
+    document.addEventListener("DOMContentLoaded", Paint.init);
+  </script>
+
+</body>
+</html>
