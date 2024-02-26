@@ -20,13 +20,13 @@ export const SheetData = {
     BottomMiddle: { x: 21, y: 377, width: 417, height: 21, count: 1 },
     BottomRight: { x: 439, y: 377, width: 21, height: 21, count: 1 },
   },
-  ButtonTile: { x: 0, y: 482, width: 50, height: 50, count: 6 },
-  ButtonSmiley: { x: 0, y: 532, width: 82, height: 82, count: 4 },
+  ButtonTile: { x: 0, y: 482, width: 50, height: 50, count: 8 },
+  ButtonSmiley: { x: 0, y: 532, width: 82, height: 82, count: 6 },
   Numbers: { x: 0, y: 398, width: 46, height: 84, count: 10 },
 };
 
 const Difficulty = {
-  Level_1: { Tiles: { Row: 10, Col: 10 }, Mines: 10, caption: "Level 1" },
+  Level_1: { Tiles: { Row: 10, Col: 10 }, Mines: 3, caption: "Level 1" },
   Level_2: { Tiles: { Row: 15, Col: 15 }, Mines: 50, caption: "Level 2" },
   Level_3: { Tiles: { Row: 20, Col: 30 }, Mines: 5, caption: "Level 3" },
 };
@@ -47,12 +47,13 @@ let imgSheet = null;
 
 //                        0        1       2       3         4           5          6        7
 const TextColorTable = ["Blue", "Green", "Red", "Purple", "Maroon", "Turquoise", "Black", "Gray"];
-const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 5 };
+const ETileStateType = { Up: 0, Down: 1, Open: 2, Flag: 3, ActiveMine: 4, Mine: 5, WrongFlag: 6, CorrectFlag: 7 };
 
 let numberOfSeconds = 0;
 let numberOfMines = 0;
 let intervalID = 0;
 let remainingTiles = 0;
+let smileyIndex = 0;
 
 //-----------------------------------------------------------------------------------------
 //----------- Classes ---------------------------------------------------------------------
@@ -117,7 +118,8 @@ function TTile(aRow, aCol) {
       }
     } else if (state !== ETileStateType.Flag) {
       state = ETileStateType.Down;
-      gameProps.buttonSmiley.setIndex(1);
+      smileyIndex = 1;
+      gameProps.buttonSmiley.setIndex(smileyIndex);
     }
   }
 
@@ -127,6 +129,7 @@ function TTile(aRow, aCol) {
       if (aEvent.target.cancel === false) {
         tile.open();
         if (state === ETileStateType.Open) {
+          smileyIndex = 0;
           gameProps.buttonSmiley.setIndex(0);
         }
       }
@@ -167,9 +170,16 @@ function TTile(aRow, aCol) {
       if(aHasWon){
         state = ETileStateType.Flag;
       }else{
-        state = ETileStateType.Mine;
+        if(state === ETileStateType.Flag){
+          state = ETileStateType.CorrectFlag;
+        }else{
+          state = ETileStateType.Mine;
+        }
       }
-      
+    }else if(!isMine){
+      if(state === ETileStateType.Flag){
+        state = ETileStateType.WrongFlag;
+      }
     }
   };
 
@@ -186,7 +196,7 @@ function loadGame() {
   cvs.addEventListener("contextmenu", (aEvent) => aEvent.preventDefault());
   ctx = cvs.getContext("2d");
   const pos = new TPoint(100, 20);
-  gameProps.buttonSmiley = new TSpriteButton(cvs, imgSheet, SheetData.ButtonSmiley, pos, newGame);
+  gameProps.buttonSmiley = new TSpriteButton(cvs, imgSheet, SheetData.ButtonSmiley, pos, newGame, smileyDown, smileyUp);
   newGame();
   requestAnimationFrame(drawGame);
   console.log("Game canvas is rendering!");
@@ -202,7 +212,8 @@ function newGame() {
   const x = cvs.width / 2 - SheetData.ButtonSmiley.width / 2;
   const y = 25;
   gameProps.buttonSmiley.updateDestination(x, y);
-  gameProps.buttonSmiley.setIndex(0);
+  smileyIndex = 0;
+  gameProps.buttonSmiley.setIndex(smileyIndex);
   
   //Fjerne alle tiles from event lytter!
   clearSpriteEvents(gameProps.tiles);
@@ -281,10 +292,12 @@ function drawGame() {
 
 function setGameOver(aHasWon) {
   if(aHasWon){
-    gameProps.buttonSmiley.setIndex(3);
+    smileyIndex = 4;
   }else{
-    gameProps.buttonSmiley.setIndex(2);
+    smileyIndex = 2;
   }
+  gameProps.buttonSmiley.setIndex(smileyIndex);
+
   
   //Løp igjennom alle tiles med to for-løkker, og sett disabled = true;
   for (let row = 0; row < gameProps.tiles.length; row++) {
@@ -297,6 +310,14 @@ function setGameOver(aHasWon) {
   }
   clearInterval(intervalID);
   intervalID = 0;
+}
+
+function smileyDown(){
+  gameProps.buttonSmiley.setIndex(smileyIndex + 1);
+}
+
+function smileyUp(){
+
 }
 
 //-----------------------------------------------------------------------------------------
