@@ -7,6 +7,8 @@ let ctx = null;
 
 const mousePos = new TPoint(0, 0);
 
+const points = [];
+
 //------------------------------------------------------------------------------------------------------------------
 //------ Classes
 //------------------------------------------------------------------------------------------------------------------
@@ -26,6 +28,17 @@ function newDrawing() {
 function updateDrawing() {
   ctx.clearRect(0, 0, cvsPaint.width, cvsPaint.height);
 
+  if(points.length > 0){
+    ctx.beginPath();
+    let point = points[0]; 
+    ctx.moveTo(point.x, point.y);
+    for(let i = 1; i < points.length; i++){
+      point = points[i];
+      ctx.lineTo(point.x, point.y);
+    }
+    ctx.stroke();
+  }
+  
 }
 
 function loadPaintApp() {
@@ -54,6 +67,10 @@ function cvsPaintMouseMove(aEvent) {
 
 function cvsPaintMouseDown(aEvent) {
   // Mouse button down in canvas
+  console.log(mousePos);
+  //points.push(new TPoint ( .... ))
+  points.push(new TPoint(mousePos.x, mousePos.y));
+  updateDrawing();
 }
 
 export function init(aEvent) {
