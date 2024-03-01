@@ -9,6 +9,9 @@ const mousePos = new TPoint(0, 0);
 
 const shapes = [];
 let newShape = null;
+let currentShapeType = 0;
+let currentStrokeColor = 0;
+let currentStrokeSize = 0;
 
 //------------------------------------------------------------------------------------------------------------------
 //------ Classes
@@ -16,10 +19,43 @@ let newShape = null;
 
 function TShape() {
   const points = [new TPoint(mousePos.x, mousePos.y)];
+  const type = currentShapeType;
+  const strokeColor = currentStrokeColor;
+  const strokeSize = currentStrokeSize;
 
   let rubberBand = mousePos;
 
-  this.draw = function () {
+  this.draw = function(){
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeSize;
+    switch(type){
+      case Menu.EShapeType.Line:
+      case Menu.EShapeType.Pen:
+        drawLinePen();
+        break;
+      case Menu.EShapeType.Circle:
+        drawCircle();
+        break;
+    }
+  }
+
+  function drawCircle(){
+    const center = points[0];
+    let endPoint = rubberBand;
+    if(rubberBand === null){
+      endPoint = points[1];
+    }
+    const dx = center.x - endPoint.x;
+    const dy = center.y - endPoint.y;
+    const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+    ctx.moveTo(center.x, center.y);
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
+    ctx.stroke();
+
+  }
+
+  function drawLinePen(){
     ctx.beginPath();
     let point = points[0];
     ctx.moveTo(point.x, point.y);
@@ -35,13 +71,25 @@ function TShape() {
     ctx.stroke();
   };
 
-  this.addPoint = function () {
+  this.addPoint = function (isDone) {
     points.push(new TPoint(mousePos.x, mousePos.y));
-    if(points.length === 2){
+    switch (type) {
+      case Menu.EShapeType.Line:
+      case Menu.EShapeType.Circle:
+        if (points.length === 2) {
+          isDone = true;
+        }
+        break;
+      case Menu.EShapeType.Pen:
+        break;
+    }
+
+    if(isDone){
       shapes.push(newShape);
       newShape = null;
       rubberBand = null;
     }
+
   };
 }
 
@@ -80,6 +128,17 @@ function menuButtonClick(aContainerType, aValue) {
   // aValue is the value associated with the menu button user has clicked.
   const msg = `User has clicked, aContainerType = ${aContainerType}, aValue = ${aValue}`;
   console.log(msg);
+  switch (aContainerType) {
+    case Menu.EContainerType.ShapeType:
+      currentShapeType = aValue;
+      break;
+    case Menu.EContainerType.StrokeColor:
+      currentStrokeColor = aValue;
+      break;
+    case Menu.EContainerType.StrokeSize:
+      currentStrokeSize = aValue;
+      break;
+  }
 }
 
 function setMousePos(aEvent) {
@@ -91,6 +150,11 @@ function setMousePos(aEvent) {
 function cvsPaintMouseMove(aEvent) {
   // Mouse move over canvas
   setMousePos(aEvent);
+  if(newShape !== null){
+    if(currentShapeType === Menu.EShapeType.Pen){
+      newShape.addPoint(false);
+    }
+  }
   updateDrawing();
 }
 
@@ -101,7 +165,8 @@ function cvsPaintMouseDown(aEvent) {
   if (newShape === null) {
     newShape = new TShape();
   } else {
-    newShape.addPoint();
+    const isDone = currentShapeType === Menu.EShapeType.Pen;
+    newShape.addPoint(isDone);
   }
 
   updateDrawing();
