@@ -14,27 +14,35 @@ let newShape = null;
 //------ Classes
 //------------------------------------------------------------------------------------------------------------------
 
-function TShape(){
-
+function TShape() {
   const points = [new TPoint(mousePos.x, mousePos.y)];
 
-  this.draw = function(){
-    if(points.length > 0){
-      ctx.beginPath();
-      let point = points[0]; 
-      ctx.moveTo(point.x, point.y);
-      for(let i = 1; i < points.length; i++){
-        point = points[i];
-        ctx.lineTo(point.x, point.y);
-      }
-      ctx.stroke();
+  let rubberBand = mousePos;
+
+  this.draw = function () {
+    ctx.beginPath();
+    let point = points[0];
+    ctx.moveTo(point.x, point.y);
+    for (let i = 1; i < points.length; i++) {
+      point = points[i];
+      ctx.lineTo(point.x, point.y);
     }
-  }
 
+    if (rubberBand !== null) {
+      ctx.lineTo(rubberBand.x, rubberBand.y);
+    }
 
-  this.addPoint = function(){
+    ctx.stroke();
+  };
+
+  this.addPoint = function () {
     points.push(new TPoint(mousePos.x, mousePos.y));
-  }
+    if(points.length === 2){
+      shapes.push(newShape);
+      newShape = null;
+      rubberBand = null;
+    }
+  };
 }
 
 //------------------------------------------------------------------------------------------------------------------
@@ -52,15 +60,14 @@ function newDrawing() {
 function updateDrawing() {
   ctx.clearRect(0, 0, cvsPaint.width, cvsPaint.height);
 
-  for(let i = 0; i < shapes.length; i++){
+  for (let i = 0; i < shapes.length; i++) {
     const shape = shapes[i];
     shape.draw();
   }
 
-  if(newShape !== null){
+  if (newShape !== null) {
     newShape.draw();
   }
-  
 }
 
 function loadPaintApp() {
@@ -84,19 +91,19 @@ function setMousePos(aEvent) {
 function cvsPaintMouseMove(aEvent) {
   // Mouse move over canvas
   setMousePos(aEvent);
+  updateDrawing();
 }
-
 
 function cvsPaintMouseDown(aEvent) {
   // Mouse button down in canvas
   console.log(mousePos);
-  
-  if(newShape === null){
+
+  if (newShape === null) {
     newShape = new TShape();
-  }else{
+  } else {
     newShape.addPoint();
   }
-  
+
   updateDrawing();
 }
 
