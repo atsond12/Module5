@@ -12,6 +12,7 @@ let newShape = null;
 let currentShapeType = 0;
 let currentStrokeColor = 0;
 let currentStrokeSize = 0;
+let currentFillColor = 0;
 
 //------------------------------------------------------------------------------------------------------------------
 //------ Classes
@@ -22,13 +23,16 @@ function TShape() {
   const type = currentShapeType;
   const strokeColor = currentStrokeColor;
   const strokeSize = currentStrokeSize;
+  const fillColor = currentFillColor;
 
   let rubberBand = mousePos;
 
-  this.draw = function(){
+  this.draw = function () {
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = strokeSize;
-    switch(type){
+    // her kan du sette fyll farge
+    ctx.fillStyle = fillColor;
+    switch (type) {
       case Menu.EShapeType.Line:
       case Menu.EShapeType.Pen:
         drawLinePen();
@@ -36,13 +40,71 @@ function TShape() {
       case Menu.EShapeType.Circle:
         drawCircle();
         break;
+      case Menu.EShapeType.Ellipse:
+        drawEllipse();
+        break;
+      case Menu.EShapeType.Rectangle:
+        drawRectangle();
+        break;
+      case Menu.EShapeType.Polygon:
+        drawPolygon();
+        break;
     }
+  };
+
+  function drawPolygon(){
+    let point = points[0];
+
+    ctx.beginPath();
+    ctx.moveTo(point.x, point.y);
+    for(let i = 1; i < points.length; i++){
+      point = points[i];
+      ctx.lineTo(point.x, point.y);
+    }
+    if(rubberBand){
+      point = rubberBand;
+      ctx.lineTo(point.x, point.y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
   }
 
-  function drawCircle(){
+  function drawRectangle() {
+    const startPoint = points[0];
+    let endPoint = rubberBand;
+    if (rubberBand === null) {
+      endPoint = points[1];
+    }
+    const w = endPoint.x - startPoint.x;
+    const h = endPoint.y - startPoint.y;
+
+    ctx.beginPath();
+    ctx.rect(startPoint.x, startPoint.y, w, h);
+    ctx.stroke();
+    ctx.fill();
+  }
+
+  function drawEllipse() {
     const center = points[0];
     let endPoint = rubberBand;
-    if(rubberBand === null){
+    if (rubberBand === null) {
+      endPoint = points[1];
+    }
+    const rx = Math.abs(endPoint.x - center.x);
+    const ry = Math.abs(endPoint.y - center.y);
+
+    ctx.moveTo(center.x, center.y);
+    ctx.beginPath();
+    ctx.ellipse(center.x, center.y, rx, ry, 0, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.fill();
+  }
+
+  function drawCircle() {
+    const center = points[0];
+    let endPoint = rubberBand;
+    if (rubberBand === null) {
       endPoint = points[1];
     }
     const dx = center.x - endPoint.x;
@@ -52,10 +114,10 @@ function TShape() {
     ctx.beginPath();
     ctx.arc(center.x, center.y, r, 0, 2 * Math.PI);
     ctx.stroke();
-
+    ctx.fill();
   }
 
-  function drawLinePen(){
+  function drawLinePen() {
     ctx.beginPath();
     let point = points[0];
     ctx.moveTo(point.x, point.y);
@@ -69,13 +131,15 @@ function TShape() {
     }
 
     ctx.stroke();
-  };
+  }
 
   this.addPoint = function (isDone) {
     points.push(new TPoint(mousePos.x, mousePos.y));
     switch (type) {
       case Menu.EShapeType.Line:
       case Menu.EShapeType.Circle:
+      case Menu.EShapeType.Ellipse:
+      case Menu.EShapeType.Rectangle:
         if (points.length === 2) {
           isDone = true;
         }
@@ -84,12 +148,11 @@ function TShape() {
         break;
     }
 
-    if(isDone){
+    if (isDone) {
       shapes.push(newShape);
       newShape = null;
       rubberBand = null;
     }
-
   };
 }
 
@@ -138,6 +201,9 @@ function menuButtonClick(aContainerType, aValue) {
     case Menu.EContainerType.StrokeSize:
       currentStrokeSize = aValue;
       break;
+    case Menu.EContainerType.FillColor:
+      currentFillColor = aValue;
+      break;
   }
 }
 
@@ -150,8 +216,8 @@ function setMousePos(aEvent) {
 function cvsPaintMouseMove(aEvent) {
   // Mouse move over canvas
   setMousePos(aEvent);
-  if(newShape !== null){
-    if(currentShapeType === Menu.EShapeType.Pen){
+  if (newShape !== null) {
+    if (currentShapeType === Menu.EShapeType.Pen) {
       newShape.addPoint(false);
     }
   }
@@ -165,7 +231,15 @@ function cvsPaintMouseDown(aEvent) {
   if (newShape === null) {
     newShape = new TShape();
   } else {
-    const isDone = currentShapeType === Menu.EShapeType.Pen;
+    let isDone = currentShapeType === Menu.EShapeType.Pen;
+    if(aEvent.buttons === 2){
+      if(currentShapeType === Menu.EShapeType.Polygon){
+        isDone = true;
+      }
+    }
+    // Først sjekk shape type eller hvilken knapp
+    // set isDone basert på om det er polygon og høyre museklikk!!!
+
     newShape.addPoint(isDone);
   }
 
