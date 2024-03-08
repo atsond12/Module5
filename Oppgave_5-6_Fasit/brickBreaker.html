@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="no" style="display: table; margin: auto">
+  <head>
+    <meta charset="UTF-8" content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="./media/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="./media/favicon.ico" type="image/x-icon" />
+    <title>Brick Breaker</title>
+    <style>
+        body {
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          display: table-cell;
+          vertical-align: middle;
+          text-align: center;
+        }
+        h1 {
+          font-size: xx-large;
+          margin-bottom: 0px;
+          margin-top: 0px;
+        }
+    </style>
+    <link rel="stylesheet" href="./style/paint.css">
+</head>
+<body>
+<canvas id="cvsPaint" width="1000" height="700" style="background-color: ghostwhite; border: thin  gray solid"></canvas>
+<h4>Press F12 to debug (Chrome and Firefox)</h4>
+
+<script type="module">
+    "use strict";
+    import * as brickBraker from "./brickBreaker.js";
+    document.addEventListener("DOMContentLoaded", brickBraker.init);
+  </script>
+
+</body>
+</html>

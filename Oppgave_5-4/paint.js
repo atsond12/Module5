@@ -14,6 +14,8 @@ let currentStrokeColor = 0;
 let currentStrokeSize = 0;
 let currentFillColor = 0;
 
+const shapeCounts = [0, 0, 0, 0, 0, 0];
+
 //------------------------------------------------------------------------------------------------------------------
 //------ Classes
 //------------------------------------------------------------------------------------------------------------------
@@ -149,6 +151,10 @@ function TShape() {
     }
 
     if (isDone) {
+      let typeName = type - 1;
+      shapeCounts[typeName]++;
+      const shapeName = Object.keys(Menu.EShapeType)[typeName];
+      Menu.addShape(shapeName + " " + shapeCounts[typeName]);
       shapes.push(newShape);
       newShape = null;
       rubberBand = null;
@@ -203,6 +209,20 @@ function menuButtonClick(aContainerType, aValue) {
       break;
     case Menu.EContainerType.FillColor:
       currentFillColor = aValue;
+      break;
+    case Menu.EContainerType.Action:
+      if(aValue === Menu.EActionType.New){
+        console.log("Bruker vil lage nytt paint dokument!");
+      }else if(aValue === Menu.EActionType.MoveDown){
+        Menu.moveShapeDown(shapes);
+        updateDrawing();
+      }else if(aValue === Menu.EActionType.MoveUp){
+        Menu.moveShapeUp(shapes);
+        updateDrawing();
+      }else if(aValue === Menu.EActionType.Eraser){
+        Menu.removeShape(shapes);
+        updateDrawing();
+      }
       break;
   }
 }
