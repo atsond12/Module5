@@ -3,6 +3,7 @@
 let containerContent = null;
 const EPageStateType = {Home: 1, About: 2, Example1: 3};
 let pageState = EPageStateType.Home;
+const movies = [];
 
 document.addEventListener("DOMContentLoaded", contentLoaded);
 
@@ -29,17 +30,9 @@ function cmbAddMovie(){
   const inpGenre = document.getElementById("inpGenre");
   const inpRating = document.getElementById("inpRating");
   const tbodyMovies = document.getElementById("tbodyMovies");
-  const row = tbodyMovies.insertRow();
-  let cell = row.insertCell();
-  cell.appendChild(document.createTextNode(inpTitle.value));
-  cell = row.insertCell();
-  cell.appendChild(document.createTextNode(inpDirector.value));
-  cell = row.insertCell();
-  cell.appendChild(document.createTextNode(inpYear.value));
-  cell = row.insertCell();
-  cell.appendChild(document.createTextNode(inpGenre.value));
-  cell = row.insertCell();
-  cell.appendChild(document.createTextNode(inpRating.value));
+  const movie = new TMovie(inpTitle, inpDirector, inpYear, inpGenre, inpRating);
+  movie.addToTable(tbodyMovies);
+  movies.push(movie);
 }
 
 function cmbShowExample1(){

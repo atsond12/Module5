@@ -9,6 +9,15 @@ function TMovie(aTitle, aDirector, aYear, aGenre, aRating){
 
   this.addToTable = function(aTableBody){
    const row = aTableBody.insertRow();
-    
+   let cell =  row.insertCell();
+   cell.appendChild(document.createTextNode(title));
+   cell =  row.insertCell();
+   cell.appendChild(document.createTextNode(director));
+   cell =  row.insertCell();
+   cell.appendChild(document.createTextNode(year));
+   cell =  row.insertCell();
+   cell.appendChild(document.createTextNode(genre));
+   cell =  row.insertCell();
+   cell.appendChild(document.createTextNode(rating));
   }
 }
