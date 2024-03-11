@@ -20,4 +20,10 @@ function TMovie(aTitle, aDirector, aYear, aGenre, aRating){
    cell =  row.insertCell();
    cell.appendChild(document.createTextNode(rating));
   }
+
+  this.getObject = function(){
+    return {
+      title: title, director: director, year: year, genre: genre, rating: rating
+    }
+  }
 }

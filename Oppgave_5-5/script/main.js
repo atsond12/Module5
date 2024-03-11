@@ -3,13 +3,14 @@
 let containerContent = null;
 const EPageStateType = {Home: 1, About: 2, Example1: 3};
 let pageState = EPageStateType.Home;
-const movies = [];
+let movies = [];
 
 document.addEventListener("DOMContentLoaded", contentLoaded);
 
 function contentLoaded(){
   containerContent = document.getElementById("containerContent");
   loadPageState();
+  loadMovies();
   switch(pageState){
     case EPageStateType.Home:
       cmbShowHome();
@@ -33,11 +34,13 @@ function cmbAddMovie(){
   const movie = new TMovie(inpTitle, inpDirector, inpYear, inpGenre, inpRating);
   movie.addToTable(tbodyMovies);
   movies.push(movie);
+  writeMovies();
 }
 
 function cmbShowExample1(){
   loadTemplate("tmExample1", containerContent);
   writePageState(EPageStateType.Example1);
+  addMoviesToHtmlTable();
 }
 
 function cmbShowAbout(){
@@ -69,4 +72,45 @@ function loadPageState(){
 function writePageState(aPageState){
   pageState = aPageState;
   localStorage.setItem("pageState", pageState);
+}
+
+function writeMovies(){
+  const jsonMovies = [];
+  for(let i = 0; i < movies.length; i++){
+    const movie = movies[i];
+    jsonMovies.push(movie.getObject());
+  }
+  localStorage.setItem("movies", JSON.stringify(jsonMovies));
+}
+
+function loadMovies(){
+  let jsonMovies = localStorage.getItem("movies");
+  if(jsonMovies){
+    jsonMovies = JSON.parse(jsonMovies);
+    for(let i = 0; i < jsonMovies.length; i++){
+      const jsonMovie = jsonMovies[i];
+      const movie = new TMovie(
+        {value: jsonMovie.title},
+        {value: jsonMovie.director},
+        {value: jsonMovie.year},
+        {value: jsonMovie.genre},
+        {value: jsonMovie.rating}
+      );
+        
+      movies.push(movie);
+    }
+  }
+}
+
+function addMoviesToHtmlTable(){
+  const tbodyMovies = document.getElementById("tbodyMovies");
+
+  while(tbodyMovies.firstChild){
+    tbodyMovies.removeChild(tbodyMovies.firstChild);
+  }
+
+  for(let i = 0; i < movies.length; i++){
+    const movie = movies[i];
+    movie.addToTable(tbodyMovies);
+  }
 }
