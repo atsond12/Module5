@@ -22,6 +22,26 @@ function contentLoaded(){
   }
 }
 
+function cmbAddMovie(){
+  const inpTitle = document.getElementById("inpTitle");
+  const inpDirector = document.getElementById("inpDirector");
+  const inpYear = document.getElementById("inpYear");
+  const inpGenre = document.getElementById("inpGenre");
+  const inpRating = document.getElementById("inpRating");
+  const tbodyMovies = document.getElementById("tbodyMovies");
+  const row = tbodyMovies.insertRow();
+  let cell = row.insertCell();
+  cell.appendChild(document.createTextNode(inpTitle.value));
+  cell = row.insertCell();
+  cell.appendChild(document.createTextNode(inpDirector.value));
+  cell = row.insertCell();
+  cell.appendChild(document.createTextNode(inpYear.value));
+  cell = row.insertCell();
+  cell.appendChild(document.createTextNode(inpGenre.value));
+  cell = row.insertCell();
+  cell.appendChild(document.createTextNode(inpRating.value));
+}
+
 function cmbShowExample1(){
   loadTemplate("tmExample1", containerContent);
   writePageState(EPageStateType.Example1);
