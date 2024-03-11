@@ -14,17 +14,11 @@ function contentLoaded(){
       cmbShowHome();
       break;
     case EPageStateType.About:
-      cmbShowAbout();
+      cmbShowAbout()
       break;
     case EPageStateType.Example1:
       cmbShowExample1();
-      break;
   }
-}
-
-function cmbShowExample1(){
-  loadTemplate("tmExample1", containerContent);
-  writePageState(EPageStateType.Example1);
 }
 
 function cmbShowAbout(){

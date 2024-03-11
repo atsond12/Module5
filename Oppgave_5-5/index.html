@@ -25,6 +25,9 @@
           <li>
             <button class="dropdown-item" type="button" onclick="cmbShowAbout()">Om kurset!</button>
           </li>
+          <li>
+            <button class="dropdown-item" type="button" onclick="cmbShowExample1()">Eksempel 1</button>
+          </li>
         </ul>
       </div>
     </div>
@@ -46,6 +49,31 @@
         Dette kurset handler om innføring i HTML og Templates<br />
         Vi bruker JavaScript til å vise templates basert på brukerens valg.
       </p>
+    </template>
+
+    <template id="tmExample1">
+      <h2>Eksempel 1, Mine filmer</h2>
+      <fieldset class="border p-1">
+        <legend class="float-none w-auto p-1">Mine Filmer</legend>
+        <p>
+          <label>Tittel: </label>
+          <input type="text" placeholder="Tittel" style="width: 20em;">
+          <label>Regi: </label>
+          <input type="text" placeholder="Regi." style="width: 15em;">
+        </p>
+        <p>
+          <label>År: </label>
+          <input type="number" placeholder="2024" style="width: 4em;">
+          <label>Sjanger: </label>
+          <input type="text" placeholder="Sjanger" style="width: 10em;">
+          <label>Rangering: </label>
+          <input type="number" placeholder="5.5" style="width: 4em;">
+          <span> (1.0 til 10.0)</span>
+        </p>
+        <p>
+          <button class="button">Lagre!</button>
+        </p>
+      </fieldset>
     </template>
   </body>
 </html>
