@@ -18,35 +18,21 @@ body {
 #divMovies {
   width: 100%;
 }
-#paintObjectList {
+
+th, td {
+  padding: 8px;
   text-align: left;
-  width: 210px;
-  height: 109px;
-  line-height: 1em;
-  overflow: scroll;
-  padding: 5px;
-  background-color: antiquewhite;
-  color: #714d03;
-  scrollbar-base-color: #debb07;
+  border-bottom: 1px solid #ddd;
 }
 
-.paintObject {
-  padding: 3px 3px 3px;
-  cursor: pointer;
+th {
+  background-color: #f0f0f0; /* Light gray for header */
 }
 
-.selected {
-  padding: 0;
-  background-color: dodgerblue;
-  color: white;
-  background-clip: content-box;
-  border: 3px darkred solid;
+tfoot {
+  background-color: #f0f0f0; /* Similar to header color */
 }
 
-.paintObject:hover {
-  padding: 0;
-  background-color: dodgerblue;
-  color: white;
-  background-clip: content-box;
-  border: 3px darkred solid;
+tr:nth-child(even) {
+  background-color: #f9f9f9; /* Very light gray for even rows */
 }

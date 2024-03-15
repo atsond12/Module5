@@ -15,35 +15,6 @@ body {
   text-align: center;
 }
 
-#paintObjectList {
-  text-align: left;
-  width: 210px;
-  height: 109px;
-  line-height: 1em;
-  overflow: scroll;
-  padding: 5px;
-  background-color: antiquewhite;
-  color: #714d03;
-  scrollbar-base-color: #debb07;
-}
-
-.paintObject {
-  padding: 3px 3px 3px;
-  cursor: pointer;
-}
-
-.selected {
-  padding: 0;
-  background-color: dodgerblue;
-  color: white;
-  background-clip: content-box;
-  border: 3px darkred solid;
-}
-
-.paintObject:hover {
-  padding: 0;
-  background-color: dodgerblue;
-  color: white;
-  background-clip: content-box;
-  border: 3px darkred solid;
+#divMovies {
+  width: 100%;
 }

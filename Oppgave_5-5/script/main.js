@@ -99,6 +99,18 @@ function loadMovies(){
         
       movies.push(movie);
     }
+  }else{
+    for(let i = 0; i < myMovies.length; i++){
+      const myMovie = myMovies[i];
+      const movie = new TMovie(
+        {value: myMovie.title},
+        {value: myMovie.director},
+        {value: myMovie.year},
+        {value: myMovie.genre[0]},
+        {value: myMovie.rating}
+      )
+      movies.push(movie);
+    }
   }
 }
 

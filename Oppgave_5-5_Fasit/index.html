@@ -10,30 +10,29 @@
     <!-- Her er CDN til bootstrap-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
     <!-- Her er mine styles og scripts-->
     <link rel="stylesheet" href="./style/style.css" />
+    <script src="./script/movie.js"></script>
     <script src="./script/main.js"></script>
-    <script src="./script/movies.js"></script>
-    <script src="./script/example1.js"></script>
   </head>
   <body>
-    <div id="containerHeader" style="min-width: 1024px;">
-      <nav class="navbar navbar-expand-sm bg-light">
-        <div class="container-fluid">
-          <ul class="navbar-nav me-auto mb-2 mb-sm-0">
-            <li class="nav-item">
-              <button class="nav-link active" onclick="cmbShowHome()">Hjem!</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link active" onclick="cmbShowAbout()">Om kurset!</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link active" onclick="cmbShowExample1()">Eksempel 1!</button>
-            </li>
-          </ul>
-        </div>
-      </nav>
-
+    <div id="containerHeader">
+      <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Meny</button>
+        <ul class="dropdown-menu">
+          <li>
+            <button class="dropdown-item" type="button" onclick="cmbShowHome()">Hjem!</button>
+          </li>
+          <li>
+            <button class="dropdown-item" type="button" onclick="cmbShowAbout()">Om kurset!</button>
+          </li>
+          <li>
+            <button class="dropdown-item" type="button" onclick="cmbShowExample1()">Eksempel 1</button>
+          </li>
+        </ul>
+      </div>
+    </div>
     <div id="containerContent"></div>
     <div id="containerFooter">
       <p>© Arne-Thomas 2024</p>
@@ -53,36 +52,57 @@
     </template>
 
     <template id="tmExample1">
-      <h2 class="h2">Eksempel 1, Mine filmer</h2>
-      <p>
-        I dette eksempelet viser vi hvordan vi kan lage dynamiske lister hjelp av template<br />
-        Vi bruker en template for å vise listen, og vi bruker DOM elementer for å lage nye liste elementer.
-      </p>
-      <div id="divMovies" style="margin: 50px;;">
-        <table class="table">
-          <thead>
-            <tr>
-              <th colspan="5">
-                Mine top filmer:
-              </th>
-            </tr>
-            <tr>
-              <th>Tittel.</th>
-              <th>Årstall</th>
-              <th>Regi.</th>
-              <th>Rating.</th>
-              <th>Sjanger.</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyMovies">
-          </tbody>
-          <tfoot id="tfootMovie">
-            <tr>
-              <td colspan="5" style="text-align: center;">Antall: <span id="spanNoOfMovies">0</span></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <h2>Eksempel 1, Mine filmer</h2>
+      <fieldset class="border p-1">
+        <legend class="float-none w-auto p-1">Mine Filmer</legend>
+        <p>
+          <label>Tittel: </label>
+          <input id="inpTitle" type="text" placeholder="Tittel" style="width: 20em" />
+          <label>Regi: </label>
+          <input id="inpDirector" type="text" placeholder="Regi." style="width: 15em" />
+        </p>
+        <p>
+          <label>År: </label>
+          <input id="inpYear" type="number" placeholder="2024" style="width: 4em" />
+          <label>Sjanger: </label>
+          <select id="inpGenre" placeholder="Sjanger" style="width: 7em">
+            <option value="Aksjon">Aksjon</option>
+            <option value="Eventyr">Eventyr</option>
+            <option value="Komedie">Komedie</option>
+            <option value="Drama">Drama</option>
+            <option value="Fantasi">Fantasi</option>
+            <option value="Skrekk">Skrekk</option>
+            <option value="Romantikk">Romantikk</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Thriller">Thriller</option>
+            <option value="Animasjon">Animasjon</option>
+          </select>
+          <label>Rangering: </label>
+          <input id="inpRating" type="number" placeholder="5.5" style="width: 4em" />
+          <span> (1.0 til 10.0)</span>
+        </p>
+        <p>
+          <button class="button" onclick="cmbAddMovie()">Lagre!</button>
+        </p>
+      </fieldset>
+      <table class="table table-info table-striped">
+        <thead>
+          <tr class="table-primary" style="text-align: left;">
+            <th><span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Title)">Tittel</span></th>
+            <th><span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Director)">Regi</span></th>
+            <th><span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Year)">År</span></th>
+            <th><span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Genre)">Sjanger</span></th>
+            <th><span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Rating)">Rang.</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbodyMovies"></tbody>
+        <tfoot>
+          <tr class="table-light">
+            <td colspan="4" style="text-align: right;">Antall filmer:</td>
+            <td style="text-align: left;" id="tdNumberOfMovies">0</td>
+          </tr>
+        </tfoot>
+      </table>
     </template>
   </body>
 </html>
