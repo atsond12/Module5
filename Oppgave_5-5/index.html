@@ -85,9 +85,9 @@
           <button class="button" onclick="cmbAddMovie()">Lagre!</button>
         </p>
       </fieldset>
-      <table class="table">
+      <table class="table table-success table-striped">
         <thead>
-          <tr>
+          <tr class="table-primary">
             <th>Tittel</th>
             <th>Regi</th>
             <th>År</th>
@@ -96,6 +96,12 @@
           </tr>
         </thead>
         <tbody id="tbodyMovies"></tbody>
+        <tfoot>
+          <tr class="table-secondary">
+            <td colspan="4" style="text-align: right;">Antall filmer:</td>
+            <td id="tdNumberOfMovies" style="text-align: left;">100</td>
+          </tr>
+        </tfoot>
       </table>
     </template>
   </body>

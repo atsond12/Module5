@@ -18,7 +18,10 @@ function TMovie(aTitle, aDirector, aYear, aGenre, aRating){
    cell =  row.insertCell();
    cell.appendChild(document.createTextNode(genre));
    cell =  row.insertCell();
-   cell.appendChild(document.createTextNode(rating));
+   cell.appendChild(document.createTextNode(rating.toFixed(1)));
+
+   const tdNumberOfMovies = document.getElementById("tdNumberOfMovies");
+   tdNumberOfMovies.innerText = movies.length.toString();
   }
 
   this.getObject = function(){

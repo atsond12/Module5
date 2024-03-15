@@ -32,8 +32,8 @@ function cmbAddMovie(){
   const inpRating = document.getElementById("inpRating");
   const tbodyMovies = document.getElementById("tbodyMovies");
   const movie = new TMovie(inpTitle, inpDirector, inpYear, inpGenre, inpRating);
-  movie.addToTable(tbodyMovies);
   movies.push(movie);
+  movie.addToTable(tbodyMovies);
   writeMovies();
 }
 
