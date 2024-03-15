@@ -88,11 +88,21 @@
       <table class="table table-success table-striped">
         <thead>
           <tr class="table-primary">
-            <th>Tittel</th>
-            <th>Regi</th>
-            <th>År</th>
-            <th>Sjanger</th>
-            <th>Rang.</th>
+            <th>
+              <span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Title)">Tittel</span>
+            </th>
+            <th>
+              <span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Director)">Regi</span>
+              </th>
+            <th>
+              <span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Year)">År</span>
+            </th>
+            <th>
+              <span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Genre)">Sjanger</span>
+            </th>
+            <th>
+              <span style="cursor: pointer;" onclick="sortByColumn(EMovieColumnName.Rating)">Rang.</span>
+            </th>
           </tr>
         </thead>
         <tbody id="tbodyMovies"></tbody>

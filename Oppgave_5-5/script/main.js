@@ -4,6 +4,7 @@ let containerContent = null;
 const EPageStateType = {Home: 1, About: 2, Example1: 3};
 let pageState = EPageStateType.Home;
 let movies = [];
+let sortColumn = 0;
 
 document.addEventListener("DOMContentLoaded", contentLoaded);
 
@@ -125,4 +126,14 @@ function addMoviesToHtmlTable(){
     const movie = movies[i];
     movie.addToTable(tbodyMovies);
   }
+}
+
+function sortByColumn(aColumn){
+  sortColumn = aColumn;
+  movies.sort(sortMovies);
+  addMoviesToHtmlTable();
+}
+
+function sortMovies(aMovie1, aMovie2){
+  return aMovie2.sortMovie(aMovie1, sortColumn);
 }

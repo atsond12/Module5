@@ -1,4 +1,5 @@
 "use strict"
+const EMovieColumnName = {Title: 1, Director: 2, Year: 3, Genre: 4, Rating: 5};
 
 function TMovie(aTitle, aDirector, aYear, aGenre, aRating){
   const title = aTitle.value;
@@ -28,5 +29,41 @@ function TMovie(aTitle, aDirector, aYear, aGenre, aRating){
     return {
       title: title, director: director, year: year, genre: genre, rating: rating
     }
+  }
+
+  this.sortMovie = function(aMovie, aColumn){
+    switch(aColumn){
+      case EMovieColumnName.Title:
+        return aMovie.compareTitle(title);
+      case EMovieColumnName.Director:
+        return aMovie.compareDirector(director);
+      case EMovieColumnName.Year:
+        return aMovie.compareYear(year);
+      case EMovieColumnName.Genre:
+        return aMovie.compareGenre(genre);
+      case EMovieColumnName.Rating:
+        return aMovie.compareRating(rating);
+
+    }
+  }
+
+  this.compareTitle = function(aTitle){
+    return title.localeCompare(aTitle);
+  }
+
+  this.compareDirector = function(aDirector){
+    return director.localeCompare(aDirector);
+  }
+
+  this.compareYear = function(aYear){
+    return year - aYear;
+  }
+
+  this.compareGenre = function(aGenre){
+    return genre.localeCompare(aGenre);
+  }
+
+  this.compareRating = function(aRating){
+    return rating - aRating;
   }
 }
