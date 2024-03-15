@@ -5,6 +5,7 @@ const EPageStateType = {Home: 1, About: 2, Example1: 3};
 let pageState = EPageStateType.Home;
 let movies = [];
 let sortColumn = 0;
+let sortAscending = true;
 
 document.addEventListener("DOMContentLoaded", contentLoaded);
 
@@ -129,11 +130,19 @@ function addMoviesToHtmlTable(){
 }
 
 function sortByColumn(aColumn){
+  if(sortColumn !== aColumn){
+    sortAscending = true;
+  }else{
+    sortAscending = !sortAscending;
+  }
   sortColumn = aColumn;
   movies.sort(sortMovies);
   addMoviesToHtmlTable();
 }
 
 function sortMovies(aMovie1, aMovie2){
-  return aMovie2.sortMovie(aMovie1, sortColumn);
+  if(sortAscending){
+    return aMovie2.sortMovie(aMovie1, sortColumn);
+  }
+  return aMovie1.sortMovie(aMovie2, sortColumn);
 }
