@@ -1,7 +1,7 @@
 "use strict"
 
 let containerContent = null;
-const EPageStateType = {Home: 1, About: 2, Example1: 3};
+const EPageStateType = {Home: 1, About: 2, Example1: 3, Example2: 4};
 let pageState = EPageStateType.Home;
 let movies = [];
 let sortColumn = 0;
@@ -23,6 +23,9 @@ function contentLoaded(){
     case EPageStateType.Example1:
       cmbShowExample1();
       break;
+    case EPageStateType.Example2:
+      cmbShowExample2();
+      break;
   }
 }
 
@@ -37,6 +40,12 @@ function cmbAddMovie(){
   movies.push(movie);
   movie.addToTable(tbodyMovies);
   writeMovies();
+}
+
+function cmbShowExample2(){
+  loadTemplate("tmExample2", containerContent);
+  writePageState(EPageStateType.Example2);
+  loadImageCarousel();
 }
 
 function cmbShowExample1(){
