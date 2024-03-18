@@ -1,21 +1,19 @@
-"use strict"
+"use strict";
 
 let containerContent = null;
-const EPageStateType = {Home: 1, About: 2, Example1: 3};
+const EPageStateType = { Home: 1, About: 2, Example1: 3, Example2: 4};
 let pageState = EPageStateType.Home;
 let movies = [];
-
-let sortAscending = true;
 let sortColumn = 0;
-
+let sortAscending = true;
 
 document.addEventListener("DOMContentLoaded", contentLoaded);
 
-function contentLoaded(){
+function contentLoaded() {
   containerContent = document.getElementById("containerContent");
   loadPageState();
   loadMovies();
-  switch(pageState){
+  switch (pageState) {
     case EPageStateType.Home:
       cmbShowHome();
       break;
@@ -25,10 +23,13 @@ function contentLoaded(){
     case EPageStateType.Example1:
       cmbShowExample1();
       break;
+    case EPageStateType.Example2:
+      cmbShowExample2();
+      break;
   }
 }
 
-function cmbAddMovie(){
+function cmbAddMovie() {
   const inpTitle = document.getElementById("inpTitle");
   const inpDirector = document.getElementById("inpDirector");
   const inpYear = document.getElementById("inpYear");
@@ -36,102 +37,109 @@ function cmbAddMovie(){
   const inpRating = document.getElementById("inpRating");
   const tbodyMovies = document.getElementById("tbodyMovies");
   const movie = new TMovie(inpTitle, inpDirector, inpYear, inpGenre, inpRating);
-  movie.addToTable(tbodyMovies);
   movies.push(movie);
+  movie.addToTable(tbodyMovies);
   writeMovies();
 }
 
-function cmbShowExample1(){
+function cmbShowExample2() {
+  loadTemplate("tmExample2", containerContent);
+  writePageState(EPageStateType.Example2);
+  loadImageCarousel();
+}
+
+function cmbShowExample1() {
   loadTemplate("tmExample1", containerContent);
   writePageState(EPageStateType.Example1);
   addMoviesToHtmlTable();
 }
 
-function cmbShowAbout(){
+function cmbShowAbout() {
   loadTemplate("tmAbout", containerContent);
   writePageState(EPageStateType.About);
 }
 
-function cmbShowHome(){
+function cmbShowHome() {
   loadTemplate("tmWelcome", containerContent);
   writePageState(EPageStateType.Home);
 }
 
-function loadTemplate(aTemplateID, aContainer){
+function loadTemplate(aTemplateID, aContainer) {
   const tm = document.getElementById(aTemplateID);
   const cnt = tm.content.cloneNode(true);
-  while(aContainer.firstChild){
+  while (aContainer.firstChild) {
     aContainer.removeChild(aContainer.firstChild);
   }
   aContainer.appendChild(cnt);
 }
 
-function loadPageState(){
+function loadPageState() {
   const value = localStorage.getItem("pageState");
-  if(value){
+  if (value) {
     pageState = parseInt(value);
   }
 }
 
-function writePageState(aPageState){
+function writePageState(aPageState) {
   pageState = aPageState;
   localStorage.setItem("pageState", pageState);
 }
 
-function writeMovies(){
+function writeMovies() {
   const jsonMovies = [];
-  for(let i = 0; i < movies.length; i++){
+  for (let i = 0; i < movies.length; i++) {
     const movie = movies[i];
     jsonMovies.push(movie.getObject());
   }
   localStorage.setItem("movies", JSON.stringify(jsonMovies));
 }
 
-function loadMovies(){
+function loadMovies() {
   let jsonMovies = localStorage.getItem("movies");
-  if(jsonMovies){
+  if (jsonMovies) {
     jsonMovies = JSON.parse(jsonMovies);
-    for(let i = 0; i < jsonMovies.length; i++){
+    for (let i = 0; i < jsonMovies.length; i++) {
       const jsonMovie = jsonMovies[i];
-      const movie = new TMovie(
-        {value: jsonMovie.title},
-        {value: jsonMovie.director},
-        {value: jsonMovie.year},
-        {value: jsonMovie.genre},
-        {value: jsonMovie.rating}
-      );
-        
+      const movie = new TMovie({ value: jsonMovie.title }, { value: jsonMovie.director }, { value: jsonMovie.year }, { value: jsonMovie.genre }, { value: jsonMovie.rating });
+
+      movies.push(movie);
+    }
+  } else {
+    for (let i = 0; i < myMovies.length; i++) {
+      const myMovie = myMovies[i];
+      const movie = new TMovie({ value: myMovie.title }, { value: myMovie.director }, { value: myMovie.year }, { value: myMovie.genre[0] }, { value: myMovie.rating });
       movies.push(movie);
     }
   }
 }
 
-function addMoviesToHtmlTable(){
+function addMoviesToHtmlTable() {
   const tbodyMovies = document.getElementById("tbodyMovies");
 
-  while(tbodyMovies.firstChild){
+  while (tbodyMovies.firstChild) {
     tbodyMovies.removeChild(tbodyMovies.firstChild);
   }
 
-  for(let i = 0; i < movies.length; i++){
+  for (let i = 0; i < movies.length; i++) {
     const movie = movies[i];
     movie.addToTable(tbodyMovies);
   }
 }
 
-function sortByColumn(aColumn){
-  if(aColumn != sortColumn){
-    sortColumn = aColumn;
+function sortByColumn(aColumn) {
+  if (sortColumn !== aColumn) {
     sortAscending = true;
-  }else{
+  } else {
     sortAscending = !sortAscending;
   }
+  sortColumn = aColumn;
+  movies.sort(sortMovies);
+  addMoviesToHtmlTable();
+}
 
-  movies.sort((aMovie1, aMovie2) =>{
-    if(sortAscending){
-      return aMovie2.sortByColumn(aColumn, aMovie1);
-    }
-    return aMovie1.sortByColumn(aColumn, aMovie2);
-  })
-  addMoviesToHtmlTable();  
+function sortMovies(aMovie1, aMovie2) {
+  if (sortAscending) {
+    return aMovie2.sortMovie(aMovie1, sortColumn);
+  }
+  return aMovie1.sortMovie(aMovie2, sortColumn);
 }

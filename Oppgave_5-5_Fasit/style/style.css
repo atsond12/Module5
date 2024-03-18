@@ -18,3 +18,21 @@ body {
 #divMovies {
   width: 100%;
 }
+
+th, td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f0f0f0; /* Light gray for header */
+}
+
+tfoot {
+  background-color: #f0f0f0; /* Similar to header color */
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9; /* Very light gray for even rows */
+}
