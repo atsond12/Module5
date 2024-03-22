@@ -15,6 +15,7 @@ const ImageFileObjects = [
 
 let divImageCarousel = null;
 let currentHtmlImage = null;
+let divCarouselIndicator = null;
 
 function THtmlImage(aIndex, aPrev = null){
   const imgObj = ImageFileObjects[aIndex++];
@@ -27,6 +28,14 @@ function THtmlImage(aIndex, aPrev = null){
   img.alt = imgObj.caption;
   img.src = imgObj.fn;
   img.width = 1024;
+  //<button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+  const htmlButton = document.createElement("button");
+  htmlButton.setAttribute("data-bs-target", "#divCarouselIndicator");
+  htmlButton.setAttribute("data-bs-slide-to", "0");
+  htmlButton.setAttribute("aria-current", "true");
+  htmlButton.setAttribute("type", "button");
+  htmlButton.classList.add("active");
+  divCarouselIndicator.appendChild(htmlButton);
 
   function hide(){
     while(divImageCarousel.firstChild){
@@ -56,6 +65,7 @@ function THtmlImage(aIndex, aPrev = null){
 
 function loadImageCarousel(){
   divImageCarousel = document.getElementById("divImageCarousel");
+  divCarouselIndicator = document.getElementById("divCarouselIndicator");
   
   currentHtmlImage = new THtmlImage(0);
   currentHtmlImage.show();
